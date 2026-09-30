@@ -47,6 +47,12 @@ Use sqlite db
 Execute migrations with:
 
 ```SHELL
+pnpm generate:migration
+```
+
+or
+
+```SHELL
 pnpm typeorm migration:generate src/database/migrations/${name-your-migration} -d src/database/data-source.ts
 ```
 
