@@ -23,7 +23,7 @@ export const environmentSchema = object({
   STORAGE_INTERNAL_HRS: receiveStrTransformNumber('1'),
   SAVE_INTERVAL_MIN: receiveStrTransformNumber('5'),
 
-  DB_URL: _string().nonempty().default('./database/tracking-report.db'),
+  DB_URL: _string().nonempty().default('./database/tracking-report.sqlite'),
 });
 
 export type EnvironmentSchema = z.infer<typeof environmentSchema>;
