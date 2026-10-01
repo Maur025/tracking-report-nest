@@ -8,11 +8,8 @@ on:
 
 jobs:
   review-build-and-test:
+    if: ${{ github.repository == 'Maur025/tracking-report-nest' }}
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [24]
 
     steps:
       - name: Checkout code
@@ -21,8 +18,9 @@ jobs:
       - name: Setup pnpm and Node.js
         uses: pnpm/setup@v2.0.0
         with:
-          runtime: node@${{ matrix.node-version }}
+          runtime: node@24
           cache: true
+          require-lockfile: true
 
       - name: Code check
         run: pnpm lint
