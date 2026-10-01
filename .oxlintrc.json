@@ -1,8 +1,13 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "rules": {
-    "typescript/no-explicit-any": "off",
-    "typescript/no-floating-promises": "error"
+    "no-undef": "error",
+    "no-unreachable": "error",
+
+    "typescript/no-floating-promises": "error",
+    "typescript/no-misused-promises": "error",
+    "typescript/await-thenable": "error",
+    "typescript/no-explicit-any": "off"
   },
   "env": {
     "node": true
