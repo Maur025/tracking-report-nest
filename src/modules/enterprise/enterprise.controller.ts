@@ -1,9 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { EnterpriseService } from './enterprise.service.js';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { CreateEnterpriseDto } from './dto/create-enterprise.dto.js';
 import { UpdateEnterpriseDto } from './dto/update-enterprise.dto.js';
+import { EnterpriseService } from './enterprise.service.js';
 
-@Controller('enterprise')
+@Controller('enterprises')
 export class EnterpriseController {
   constructor(private readonly enterpriseService: EnterpriseService) {}
 
@@ -23,7 +31,10 @@ export class EnterpriseController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateEnterpriseDto: UpdateEnterpriseDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateEnterpriseDto: UpdateEnterpriseDto,
+  ) {
     return this.enterpriseService.update(+id, updateEnterpriseDto);
   }
 

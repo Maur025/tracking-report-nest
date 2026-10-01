@@ -44,6 +44,8 @@ Use sqlite db
 
 ### Migrations
 
+Migrations using typeOrm library, view [typeorm migrations documentation](https://typeorm.io/docs/migrations/why)
+
 Execute migrations with:
 
 ```SHELL
