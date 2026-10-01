@@ -22,27 +22,7 @@ describe('EnterpriseService', () => {
   let mockEnterpriseConfigCreate: Mock;
   let mockEnterpriseConfigSave: Mock;
 
-  const mockEnterpriseDataDto: CreateEnterpriseDto = {
-    id: 'uuid-to-save',
-    name: 'Test Enterprise',
-    description: 'This is a test enterprise',
-    color: '#FF5733',
-    image: 'base64encodedstring',
-    enterpriseConfigs: [
-      {
-        host: 'localhost',
-        port: '5432',
-        database: 'test_db',
-        referenceId: 'ref-123',
-      },
-      {
-        host: 'localhost',
-        port: '5522',
-        database: 'test_db_2',
-        referenceId: 'ref-456',
-      },
-    ],
-  };
+  let mockEnterpriseDataDto: CreateEnterpriseDto;
 
   const mockEnterpriseEntity: Enterprise = {
     id: 'uuid-to-save',
@@ -53,6 +33,8 @@ describe('EnterpriseService', () => {
   } as Enterprise;
 
   beforeEach(async () => {
+    mockEnterpriseDataDto = getMockEnterpriseDataDto();
+
     mockEnterpriseCreate = vi.fn().mockReturnValue(mockEnterpriseEntity);
     mockEnterpriseSave = vi.fn().mockResolvedValue(mockEnterpriseEntity);
 
@@ -93,6 +75,28 @@ describe('EnterpriseService', () => {
     service = module.get<EnterpriseService>(EnterpriseService);
   });
 
+  const getMockEnterpriseDataDto = () => ({
+    id: 'uuid-to-save',
+    name: 'Test Enterprise',
+    description: 'This is a test enterprise',
+    color: '#FF5733',
+    image: 'base64encodedstring',
+    enterpriseConfigs: [
+      {
+        host: 'localhost',
+        port: '5432',
+        database: 'test_db',
+        referenceId: 'ref-123',
+      },
+      {
+        host: 'localhost',
+        port: '5522',
+        database: 'test_db_2',
+        referenceId: 'ref-456',
+      },
+    ],
+  });
+
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
@@ -113,24 +117,27 @@ describe('EnterpriseService', () => {
         expect.objectContaining(mockEnterpriseEntity),
       );
       expect(mockEnterpriseConfigCreate).toHaveBeenCalledTimes(2);
-      expect(mockEnterpriseConfigCreate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          ...mockEnterpriseDataDto.enterpriseConfigs[0],
-          enterpriseRefId: mockEnterpriseDataDto.id,
-        }),
-      );
-      expect(mockEnterpriseConfigCreate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          ...mockEnterpriseDataDto.enterpriseConfigs[1],
-          enterpriseRefId: mockEnterpriseDataDto.id,
-        }),
-      );
+
+      for (const config of mockEnterpriseDataDto.enterpriseConfigs) {
+        expect(mockEnterpriseConfigCreate).toHaveBeenCalledWith(
+          expect.objectContaining({
+            host: config.host,
+            port: config.port,
+            database: config.database,
+            referenceId: config.referenceId,
+            enterpriseRefId: mockEnterpriseDataDto.id,
+          }),
+        );
+      }
 
       expect(mockEnterpriseConfigSave).toHaveBeenCalledWith(
         expect.arrayContaining(
           mockEnterpriseDataDto.enterpriseConfigs.map((config) =>
             expect.objectContaining({
-              ...config,
+              host: config.host,
+              port: config.port,
+              database: config.database,
+              referenceId: config.referenceId,
               enterpriseRefId: mockEnterpriseDataDto.id,
             }),
           ),

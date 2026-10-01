@@ -20,7 +20,10 @@ export class EnterpriseService {
 
         const enterpriseConfigEntities = enterpriseConfigs.map((config) =>
           enterpriseConfigRepository.create({
-            ...config,
+            host: config.host,
+            port: config.port,
+            database: config.database,
+            referenceId: config.referenceId,
             enterpriseRefId: enterprise.id,
           }),
         );
@@ -42,6 +45,7 @@ export class EnterpriseService {
     return `This action returns a #${id} enterprise`;
   }
 
+  // oxlint-disable-next-line no-unused-vars
   update(id: number, updateEnterpriseDto: UpdateEnterpriseDto) {
     return `This action updates a #${id} enterprise`;
   }
