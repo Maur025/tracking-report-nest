@@ -20,7 +20,6 @@ jobs:
         with:
           runtime: node@24
           cache: true
-          require-lockfile: true
 
       - name: Code check
         run: pnpm lint
