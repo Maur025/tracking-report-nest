@@ -109,6 +109,8 @@ export class EnterprisesWsHandlerService {
 
     const port: string | undefined = apiPort ? String(apiPort) : undefined;
 
+    console.log({ enterpriseId });
+
     if (!address || !port || !codename || !databaseId || !enterpriseId) {
       return;
     }
@@ -118,7 +120,7 @@ export class EnterprisesWsHandlerService {
       port: port,
       database: codename,
       referenceId: databaseId,
-      enterpriseRefId: enterpriseId,
+      enterprise: { id: enterpriseId },
     });
   }
 }

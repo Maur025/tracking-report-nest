@@ -1,6 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, Mock, vi } from 'vitest';
 import { GatewayClientHandlerService } from './gateway-client-handler.service.js';
 
 vi.mock('tracking-common', () => {
@@ -16,9 +16,11 @@ vi.mock('tracking-common', () => {
 });
 
 import { NodeControllerClient } from 'tracking-common';
+import { EnterprisesWsHandlerService } from './enterprises-ws-handler.service.js';
 
 describe('GatewayClientHandlerService', () => {
   let service: GatewayClientHandlerService;
+  let mockSaveEnterprisesWithConfigurations: Mock;
 
   const envConfig = {
     WS_GATEWAY_HOST_PROCESSOR: 'localhost',
@@ -27,6 +29,8 @@ describe('GatewayClientHandlerService', () => {
   };
 
   beforeEach(async () => {
+    mockSaveEnterprisesWithConfigurations = vi.fn();
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         GatewayClientHandlerService,
@@ -34,6 +38,13 @@ describe('GatewayClientHandlerService', () => {
           provide: ConfigService,
           useValue: {
             getOrThrow: (key: keyof typeof envConfig) => envConfig[key],
+          },
+        },
+        {
+          provide: EnterprisesWsHandlerService,
+          useValue: {
+            saveEnterprisesWithConfigurations:
+              mockSaveEnterprisesWithConfigurations,
           },
         },
       ],
@@ -70,5 +81,6 @@ describe('GatewayClientHandlerService', () => {
       expect.stringContaining('enterprises'),
       expect.any(Function),
     );
+    expect(mockSaveEnterprisesWithConfigurations).not.toHaveBeenCalled();
   });
 });
