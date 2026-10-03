@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { environmentSchema } from './config/environment.schema.js';
 import { EnterpriseModule } from './modules/enterprise/enterprise.module.js';
 import { SharedModule } from './shared/shared.module.js';
+import { IntegrationsModule } from './integrations/integrations.module.js';
 
 @Module({
   imports: [
@@ -30,6 +31,8 @@ import { SharedModule } from './shared/shared.module.js';
     EnterpriseModule,
 
     SharedModule,
+
+    IntegrationsModule,
   ],
   providers: [],
 })
