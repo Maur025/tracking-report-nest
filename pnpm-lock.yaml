@@ -200,8 +200,8 @@ importers:
         specifier: ^7.8.1
         version: 7.8.2
       tracking-common:
-        specifier: file:~/work/node/js/kerno-tracking-v3/tracking-common
-        version: file:../../node/js/kerno-tracking-v3/tracking-common(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0)
+        specifier: file:../tracking-common
+        version: file:../tracking-common(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0)
       typeorm:
         specifier: ^1.1.1
         version: 1.1.1(better-sqlite3@13.0.3)(supports-color@7.2.0)(ts-node@10.9.2(@types/node@26.6.3)(typescript@6.0.3))
@@ -2744,8 +2744,8 @@ packages:
   toposort-class@1.0.1:
     resolution: {integrity: sha512-OsLcGGbYF3rMjPUf8oKktyvCiUxSbqMMS39m33MAjLTC1DVIH6x3WSt63/M77ihI09+Sdfk1AXvfhCEeUmC7mg==}
 
-  tracking-common@file:../../node/js/kerno-tracking-v3/tracking-common:
-    resolution: {directory: ../../node/js/kerno-tracking-v3/tracking-common, type: directory}
+  tracking-common@file:../tracking-common:
+    resolution: {directory: ../tracking-common, type: directory}
 
   ts-node@10.9.2:
     resolution: {integrity: sha512-f0FFpIdcHgn8zcPSbf1dRevwt047YMnaiJM3u2w2RewrB+fob/zePZcrOyQoLMMO7aBIddLcQIEK5dYjkLnGrQ==}
@@ -5654,7 +5654,7 @@ snapshots:
 
   toposort-class@1.0.1: {}
 
-  tracking-common@file:../../node/js/kerno-tracking-v3/tracking-common(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0):
+  tracking-common@file:../tracking-common(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0):
     dependencies:
       better-sqlite3: 12.11.1
       compression: 1.8.2(supports-color@7.2.0)

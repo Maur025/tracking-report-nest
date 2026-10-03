@@ -15,6 +15,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
+      - name: Install SSH key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: 'unimportant'
+          if_key_exists: replace
+
+      - name: Adding known host
+        run: ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts
+
+      - name: Configure git to use SSH
+        run: git config --global url."git@github.com:".insteadOf "https://github.com/"
+
+      - name: Update tracking-common dependency
+        run: sed -i "s|\"file:../tracking-common\"|\"github:Maur025/tracking-common#main\"|g" package.json
+
       - name: Setup pnpm and Node.js
         uses: pnpm/setup@v3.0.0
         with:
