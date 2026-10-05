@@ -36,7 +36,7 @@ describe('EnterprisesWsHandlerService', () => {
         create: mockEnterpriseCreate,
       },
       enterpriseConfigRepository: {
-        save: mockEnterpriseConfigSave,
+        upsert: mockEnterpriseConfigSave,
         create: mockEnterpriseConfigCreate,
       },
     } as unknown as TransactionContext;
@@ -80,6 +80,9 @@ describe('EnterprisesWsHandlerService', () => {
     expect(mockEnterpriseSave).toHaveBeenCalledWith(expect.arrayContaining([]));
     expect(mockEnterpriseConfigSave).toHaveBeenCalledWith(
       expect.arrayContaining([]),
+      expect.objectContaining({
+        conflictPaths: ['database', 'referenceId', 'enterprise'],
+      }),
     );
   });
 

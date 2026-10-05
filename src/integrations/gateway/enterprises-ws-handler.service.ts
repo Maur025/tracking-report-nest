@@ -30,7 +30,9 @@ export class EnterprisesWsHandlerService {
         }
 
         if (EnterpriseConfigsToSave.length > 0) {
-          await enterpriseConfigRepository.save(EnterpriseConfigsToSave);
+          await enterpriseConfigRepository.upsert(EnterpriseConfigsToSave, {
+            conflictPaths: ['database', 'referenceId', 'enterprise'],
+          });
         }
       },
     );
@@ -108,8 +110,6 @@ export class EnterprisesWsHandlerService {
     const { apiPort, address } = server;
 
     const port: string | undefined = apiPort ? String(apiPort) : undefined;
-
-    console.log({ enterpriseId });
 
     if (!address || !port || !codename || !databaseId || !enterpriseId) {
       return;
