@@ -14,6 +14,7 @@ async function bootstrap() {
       transformOptions: {
         exposeUnsetFields: false,
       },
+      transform: true,
     }),
   );
 
