@@ -37,4 +37,8 @@ export class EnterpriseConfig extends BaseEntity {
 
   @RelationId((config: EnterpriseConfig) => config.enterprise)
   enterpriseRefId: string;
+
+  get hostUrl(): string {
+    return `http://${this.host}:${this.port}`;
+  }
 }

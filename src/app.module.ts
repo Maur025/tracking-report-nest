@@ -1,10 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { HttpClientModule } from '@nestjs/http-client';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { environmentSchema } from './config/environment.schema.js';
-import { EnterpriseModule } from './modules/enterprise/enterprise.module.js';
-import { SharedModule } from './shared/shared.module.js';
 import { IntegrationsModule } from './integrations/integrations.module.js';
+import { EnterpriseModule } from './modules/enterprise/enterprise.module.js';
+import { EventModule } from './modules/event/event.module.js';
+import { ReportModule } from './report/report.module.js';
+import { SharedModule } from './shared/shared.module.js';
 
 @Module({
   imports: [
@@ -28,11 +31,20 @@ import { IntegrationsModule } from './integrations/integrations.module.js';
       }),
     }),
 
+    HttpClientModule.register({
+      timeout: '10s',
+      isGlobal: true,
+    }),
+
     EnterpriseModule,
 
     SharedModule,
 
     IntegrationsModule,
+
+    EventModule,
+
+    ReportModule,
   ],
   providers: [],
 })

@@ -166,6 +166,9 @@ importers:
 
   .:
     dependencies:
+      '@js-temporal/polyfill':
+        specifier: ^0.5.1
+        version: 0.5.1
       '@nestjs/common':
         specifier: ^12.0.1
         version: 12.1.1(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0)
@@ -175,6 +178,9 @@ importers:
       '@nestjs/core':
         specifier: ^12.0.1
         version: 12.1.1(@nestjs/common@12.1.1(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/platform-express@12.1.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/http-client':
+        specifier: ^0.0.1
+        version: 0.0.1(@nestjs/common@12.1.1(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/core@12.1.1)(reflect-metadata@0.2.2)
       '@nestjs/mapped-types':
         specifier: '*'
         version: 12.0.0(@nestjs/common@12.1.1(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)
@@ -457,6 +463,10 @@ packages:
   '@jridgewell/trace-mapping@0.3.9':
     resolution: {integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==}
 
+  '@js-temporal/polyfill@0.5.1':
+    resolution: {integrity: sha512-hloP58zRVCRSpgDxmqCWJNlizAlUgJFqG2ypq79DCvyv9tHjRYMDOcPFjzfl/A1/YxDvRCZz8wvZvmapQnKwFQ==}
+    engines: {node: '>=12'}
+
   '@lukeed/csprng@1.1.0':
     resolution: {integrity: sha512-Z7C/xXCiGWsg0KuKsHTKJxbWhpI3Vs5GwLfOean7MGyVFGqdRgBbAjOCh6u4bbjPc/8MJ2pZmK/0DLdCbivLDA==}
     engines: {node: '>=8'}
@@ -528,6 +538,14 @@ packages:
         optional: true
       '@nestjs/websockets':
         optional: true
+
+  '@nestjs/http-client@0.0.1':
+    resolution: {integrity: sha512-AY32I3YZ7uREr07gp9X2nvvEYgWPR/1FvD/QSanu8stzrmGv00AUTC4n+YqeoPUZK6nwJBbTsGKh7KElRJ7Ovg==}
+    engines: {node: '>=20.19.0'}
+    peerDependencies:
+      '@nestjs/common': ^11.0.0 || ^12.0.0
+      '@nestjs/core': ^11.0.0 || ^12.0.0
+      reflect-metadata: ^0.1.13 || ^0.2.0
 
   '@nestjs/mapped-types@12.0.0':
     resolution: {integrity: sha512-aX7lxZcqXldtnSr0bgT2ZPQvpTpIwBMW1GMX29o4s3q02vmq6JoTYuPW0GwYXa8BiFMRX7WbGZVDA703pNqOMQ==}
@@ -1894,6 +1912,9 @@ packages:
 
   js-tokens@10.0.0:
     resolution: {integrity: sha512-lM/UBzQmfJRo9ABXbPWemivdCW8V2G8FHaHdypQaIy523snUjog0W71ayWXTjiR+ixeMyVHN2XcpnTd/liPg/Q==}
+
+  jsbi@4.3.2:
+    resolution: {integrity: sha512-9fqMSQbhJykSeii05nxKl4m6Eqn2P6rOlYiS+C5Dr/HPIU/7yZxu5qzbs40tgaFORiw2Amd0mirjxatXYMkIew==}
 
   json-schema-traverse@1.0.0:
     resolution: {integrity: sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug==}
@@ -3269,6 +3290,10 @@ snapshots:
       '@jridgewell/sourcemap-codec': 1.6.0
     optional: true
 
+  '@js-temporal/polyfill@0.5.1':
+    dependencies:
+      jsbi: 4.3.2
+
   '@lukeed/csprng@1.1.0': {}
 
   '@nestjs/cli@12.0.8(@types/node@26.6.3)(prettier@3.9.9)':
@@ -3329,6 +3354,12 @@ snapshots:
       uid: 2.0.2
     optionalDependencies:
       '@nestjs/platform-express': 12.1.1(@nestjs/common@12.1.1(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/core@12.1.1)(supports-color@7.2.0)
+
+  '@nestjs/http-client@0.0.1(@nestjs/common@12.1.1(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/core@12.1.1)(reflect-metadata@0.2.2)':
+    dependencies:
+      '@nestjs/common': 12.1.1(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0)
+      '@nestjs/core': 12.1.1(@nestjs/common@12.1.1(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/platform-express@12.1.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      reflect-metadata: 0.2.2
 
   '@nestjs/mapped-types@12.0.0(@nestjs/common@12.1.1(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)':
     dependencies:
@@ -4698,6 +4729,8 @@ snapshots:
   iterare@1.2.1: {}
 
   js-tokens@10.0.0: {}
+
+  jsbi@4.3.2: {}
 
   json-schema-traverse@1.0.0: {}
 
