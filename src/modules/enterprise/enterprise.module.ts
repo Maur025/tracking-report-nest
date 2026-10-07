@@ -15,5 +15,6 @@ import { Enterprise } from './entities/enterprise.entity.js';
 
     SharedModule,
   ],
+  exports: [EnterpriseConfigService],
 })
 export class EnterpriseModule {}

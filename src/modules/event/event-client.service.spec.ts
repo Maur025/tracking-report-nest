@@ -2,8 +2,11 @@ import { BadGatewayException } from '@nestjs/common';
 import { HttpClient } from '@nestjs/http-client';
 import { Test, TestingModule } from '@nestjs/testing';
 import { beforeEach, describe, expect, it, Mock, vi } from 'vitest';
-import { Content, Pagination } from './dto/event-client-response.dto.js';
 import { EventClientService } from './event-client.service.js';
+import {
+  Content,
+  Pagination,
+} from './interfaces/event-client-response.interface.js';
 
 describe('EventClientService', () => {
   let service: EventClientService;

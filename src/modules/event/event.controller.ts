@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query, StreamableFile } from '@nestjs/common';
 import { EventReportQueryParams } from './dto/event-report-query-params.js';
 import { EventService } from './event.service.js';
 
@@ -7,10 +7,17 @@ export class EventController {
   constructor(private readonly eventService: EventService) {}
 
   @Get('reports')
-  generateReportStream(
+  async generateReportStream(
     @Query() eventReportQueryParams: EventReportQueryParams,
   ) {
-    return this.eventService.generateReportStream(eventReportQueryParams);
+    const document = await this.eventService.generateReportStream(
+      eventReportQueryParams,
+    );
+
+    return new StreamableFile(document, {
+      type: 'application/pdf',
+      disposition: 'attachment; filename=event-report.pdf',
+    });
   }
 
   @Get(':id')

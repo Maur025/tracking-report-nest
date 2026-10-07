@@ -1,8 +1,20 @@
 import { Injectable } from '@nestjs/common';
+import { PdfReportService } from '../../report/services/pdf-report.service.js';
+import { formatDateOfTimestamp } from '../../shared/utils/format-date-of-timestamp.js';
+import { getDateFilter } from '../../shared/utils/get-date-filter.js';
+import { EnterpriseConfigService } from '../enterprise/enterprise-config.service.js';
+import { getEventValues } from './common/event-report-common.js';
 import { EventReportQueryParams } from './dto/event-report-query-params.js';
+import { EventClientService } from './event-client.service.js';
 
 @Injectable()
 export class EventService {
+  constructor(
+    private readonly pdfReportService: PdfReportService,
+    private readonly eventClientService: EventClientService,
+    private readonly enterpriseConfigService: EnterpriseConfigService,
+  ) {}
+
   findAll() {
     return `This action returns all event`;
   }
@@ -12,6 +24,85 @@ export class EventService {
   }
 
   async generateReportStream(eventReportQueryParams: EventReportQueryParams) {
-    console.log(eventReportQueryParams);
+    const {
+      databaseName,
+      sortBy,
+      descending,
+      vehicleId,
+      ruleId,
+      inout,
+      geofenceId,
+      type,
+      deventId,
+      title,
+      filterByLabel,
+      zoneId,
+    } = eventReportQueryParams;
+
+    const dateFilters = getDateFilter({ ...eventReportQueryParams });
+    const filters = {
+      vehicleId,
+      ruleId,
+      inout,
+      geofenceId,
+      type,
+      deventId,
+      ...dateFilters,
+    };
+
+    const enterpriseConfig =
+      await this.enterpriseConfigService.findByDatabaseNameThrow({
+        databaseName,
+      });
+
+    const document = this.pdfReportService.generate({
+      dataSource: () =>
+        this.eventClientService.getEventReportDataStream({
+          dbName: enterpriseConfig.database,
+          dbHost: enterpriseConfig.hostUrl,
+          pagination: {
+            sortBy,
+            descending,
+          },
+          filters,
+        }),
+      mainTitle: title,
+      pageHeader: {
+        username: 'Usuario de prueba',
+        filterBy: filterByLabel,
+        enterpriseName: enterpriseConfig.enterprise?.name,
+        enterpriseLogo: enterpriseConfig.enterprise?.image,
+      },
+      table: {
+        columnWidths: [30, 90, 70, 110, 80, 110],
+        columnHeaders: [
+          { text: 'Nro', fontSize: 9, paddingX: 4 },
+          { text: 'Fecha', fontSize: 9, paddingX: 4 },
+          { text: 'Tipo', fontSize: 9, paddingX: 4 },
+          { text: 'Regla', fontSize: 9, paddingX: 4 },
+          { text: 'Vehículo', fontSize: 9, paddingX: 4 },
+          { text: 'Evento', fontSize: 9, paddingX: 4 },
+        ],
+        columnRows: (item, index) => {
+          const { eventName, eventDetail } = getEventValues(item);
+          const formattedDate = formatDateOfTimestamp({
+            timestamp: item.date,
+            zoneId,
+          });
+
+          return [
+            { text: String(index), fontSize: 8, paddingX: 4 },
+            { text: formattedDate, fontSize: 8, paddingX: 4 },
+            { text: eventName, fontSize: 8, paddingX: 4 },
+            { text: item.rule, fontSize: 8, paddingX: 4 },
+            { text: item.vehicles, fontSize: 8, paddingX: 4 },
+            { text: eventDetail, fontSize: 8, paddingX: 4 },
+          ];
+        },
+      },
+      zoneId,
+    });
+
+    return document;
   }
 }

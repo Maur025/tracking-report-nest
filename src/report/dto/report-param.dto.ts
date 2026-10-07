@@ -16,6 +16,10 @@ export class ReportParamDto extends PaginationDto {
 
   @IsString()
   @IsOptional()
+  title?: string;
+
+  @IsString()
+  @IsOptional()
   filterByLabel?: string;
 
   @IsIn(['json', 'excel', 'pdf'])
