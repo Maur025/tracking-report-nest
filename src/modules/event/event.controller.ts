@@ -1,4 +1,5 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
+import { excelStreamResponse } from '../../shared/response/excel-stream-response.js';
 import { pdfStreamResponse } from '../../shared/response/pdf-stream-response.js';
 import { EventReportQueryParams } from './dto/event-report-query-params.js';
 import { EventService } from './event.service.js';
@@ -11,15 +12,23 @@ export class EventController {
   async generateReportStream(
     @Query() eventReportQueryParams: EventReportQueryParams,
   ) {
-    const document = await this.eventService.generateReportStream(
+    const response = await this.eventService.generateReportStream(
       eventReportQueryParams,
     );
 
-    return pdfStreamResponse(
-      document,
-      eventReportQueryParams.fileName,
-      eventReportQueryParams.disposition,
-    );
+    if (!response) {
+      return;
+    }
+
+    if (eventReportQueryParams.format === 'pdf') {
+      return pdfStreamResponse(
+        response,
+        eventReportQueryParams.fileName,
+        eventReportQueryParams.disposition,
+      );
+    }
+
+    return excelStreamResponse(response, eventReportQueryParams.fileName);
   }
 
   @Get(':id')
