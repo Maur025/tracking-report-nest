@@ -1,8 +1,8 @@
 import { StreamableFile } from '@nestjs/common';
-import Stream from 'node:stream';
+import { Readable } from 'node:stream';
 
 export const pdfStreamResponse = (
-  readable: Stream.Readable,
+  readable: Readable,
   filename: string = 'report.pdf',
   disposition: 'attachment' | 'inline' = 'attachment',
 ): StreamableFile =>

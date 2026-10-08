@@ -17,7 +17,7 @@ interface FormatDateOfTimestampParams {
 
 export const formatDateOfTimestamp = ({
   timestamp,
-  locales = 'en-US',
+  locales = 'en-GB',
   hour12 = false,
   year = 'numeric',
   month = '2-digit',

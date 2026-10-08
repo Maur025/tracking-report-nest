@@ -24,5 +24,5 @@ export class ReportParamDto extends PaginationDto {
 
   @IsIn(['json', 'excel', 'pdf'])
   @IsOptional()
-  format: string = 'json';
+  format: 'json' | 'excel' | 'pdf' = 'json';
 }

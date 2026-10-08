@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { ExcelReportService } from '../../report/services/excel-report.service.js';
 import { PdfReportService } from '../../report/services/pdf-report.service.js';
 import { EnterpriseConfigService } from '../enterprise/enterprise-config.service.js';
 import { EventClientService } from './event-client.service.js';
@@ -13,6 +14,7 @@ describe('EventService', () => {
       providers: [
         EventService,
         { provide: PdfReportService, useValue: {} },
+        { provide: ExcelReportService, useValue: {} },
         { provide: EventClientService, useValue: {} },
         { provide: EnterpriseConfigService, useValue: {} },
       ],
