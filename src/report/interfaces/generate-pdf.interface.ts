@@ -1,7 +1,6 @@
 export type PdfUnit = 'cm' | 'pt';
 export type PdfFont = 'Roboto' | 'Inter';
-export type PdfPageSize =
-  'LETTER' | 'A4' | 'EXECUTIVE' | 'LEGAL' | 'TABLOID' | 'A4';
+export type PdfPageSize = 'LETTER' | 'A4' | 'EXECUTIVE' | 'LEGAL' | 'TABLOID';
 
 export interface PageMargins {
   top?: number;

@@ -3,9 +3,11 @@ import { PdfReportService } from '../../report/services/pdf-report.service.js';
 import { formatDateOfTimestamp } from '../../shared/utils/format-date-of-timestamp.js';
 import { getDateFilter } from '../../shared/utils/get-date-filter.js';
 import { EnterpriseConfigService } from '../enterprise/enterprise-config.service.js';
+import type { EnterpriseConfig } from '../enterprise/entities/enterprise-config.entity.js';
 import { getEventValues } from './common/event-report-common.js';
 import { EventReportQueryParams } from './dto/event-report-query-params.js';
 import { EventClientService } from './event-client.service.js';
+import { EventReportResponse } from './interfaces/event-report-response.interface.js';
 
 @Injectable()
 export class EventService {
@@ -24,31 +26,8 @@ export class EventService {
   }
 
   async generateReportStream(eventReportQueryParams: EventReportQueryParams) {
-    const {
-      databaseName,
-      sortBy,
-      descending,
-      vehicleId,
-      ruleId,
-      inout,
-      geofenceId,
-      type,
-      deventId,
-      title,
-      filterByLabel,
-      zoneId,
-    } = eventReportQueryParams;
-
-    const dateFilters = getDateFilter({ ...eventReportQueryParams });
-    const filters = {
-      vehicleId,
-      ruleId,
-      inout,
-      geofenceId,
-      type,
-      deventId,
-      ...dateFilters,
-    };
+    const { databaseName, title, filterByLabel, zoneId } =
+      eventReportQueryParams;
 
     const enterpriseConfig =
       await this.enterpriseConfigService.findByDatabaseNameThrow({
@@ -56,16 +35,7 @@ export class EventService {
       });
 
     const document = this.pdfReportService.generate({
-      dataSource: () =>
-        this.eventClientService.getEventReportDataStream({
-          dbName: enterpriseConfig.database,
-          dbHost: enterpriseConfig.hostUrl,
-          pagination: {
-            sortBy,
-            descending,
-          },
-          filters,
-        }),
+      dataSource: this.getDataSource(enterpriseConfig, eventReportQueryParams),
       mainTitle: title,
       pageHeader: {
         username: 'Usuario de prueba',
@@ -104,5 +74,55 @@ export class EventService {
     });
 
     return document;
+  }
+
+  private getDataSource(
+    enterpriseConfig: EnterpriseConfig,
+    eventReportQueryParams: EventReportQueryParams,
+  ): () => AsyncGenerator<EventReportResponse, void, unknown> {
+    const {
+      sortBy,
+      descending,
+      date,
+      fromDate,
+      toDate,
+      monthDate,
+      yearDate,
+      zoneId,
+      vehicleId,
+      ruleId,
+      inout,
+      geofenceId,
+      type,
+      deventId,
+    } = eventReportQueryParams;
+
+    const dateFilters = getDateFilter({
+      date,
+      fromDate,
+      toDate,
+      monthDate,
+      yearDate,
+      zoneId,
+    });
+
+    return () =>
+      this.eventClientService.getEventReportDataStream({
+        dbName: enterpriseConfig.database,
+        dbHost: enterpriseConfig.hostUrl,
+        pagination: {
+          sortBy,
+          descending,
+        },
+        filters: {
+          vehicleId,
+          ruleId,
+          inout,
+          geofenceId,
+          type,
+          deventId,
+          ...dateFilters,
+        },
+      });
   }
 }

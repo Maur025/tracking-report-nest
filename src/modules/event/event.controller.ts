@@ -1,4 +1,5 @@
-import { Controller, Get, Param, Query, StreamableFile } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
+import { pdfStreamResponse } from '../../shared/response/pdf-stream-response.js';
 import { EventReportQueryParams } from './dto/event-report-query-params.js';
 import { EventService } from './event.service.js';
 
@@ -14,10 +15,11 @@ export class EventController {
       eventReportQueryParams,
     );
 
-    return new StreamableFile(document, {
-      type: 'application/pdf',
-      disposition: 'attachment; filename=event-report.pdf',
-    });
+    return pdfStreamResponse(
+      document,
+      eventReportQueryParams.fileName,
+      eventReportQueryParams.disposition,
+    );
   }
 
   @Get(':id')
