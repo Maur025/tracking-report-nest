@@ -54,7 +54,7 @@ export const tableReport =
       },
     });
 
-    renderData<T>({
+    void renderData<T>({
       workbook,
       worksheet,
       stream,
@@ -84,7 +84,7 @@ const renderData = async <T>({
       }
     }
 
-    await worksheet.commit();
+    worksheet.commit();
     await workbook.commit();
   } catch (error) {
     const cause = error instanceof Error ? error : new Error(String(error));
