@@ -1,10 +1,13 @@
 import { BadGatewayException, Injectable, Logger } from '@nestjs/common';
 import { HttpClient } from '@nestjs/http-client';
-import { EventClientResponseDto } from './dto/event-client-response.dto.js';
-import {
+import type { EventClientResponseDto } from './interfaces/event-client-response.interface.js';
+import type {
   GetEventReportDataParams,
+  GetEventReportDataResponse,
   GetEventReportDataStreamParams,
-} from './dto/event-client-service.dto.js';
+} from './interfaces/event-client-service.interface.js';
+import type { EventReportResponse } from './interfaces/event-report-response.interface.js';
+import { eventReportResponseMapper } from './mapper/event-report-response.mapper.js';
 
 @Injectable()
 export class EventClientService {
@@ -17,7 +20,7 @@ export class EventClientService {
     dbHost,
     pagination = {},
     filters = {},
-  }: GetEventReportDataParams) {
+  }: GetEventReportDataParams): Promise<GetEventReportDataResponse> {
     const transformFilters = this.transformFilters(filters);
 
     const paginationQuery = {
@@ -43,7 +46,7 @@ export class EventClientService {
       );
 
       return {
-        data: data.content,
+        data: eventReportResponseMapper(data.content),
         pagination: data.pagination,
       };
     } catch (error) {
@@ -120,7 +123,11 @@ export class EventClientService {
     dbHost,
     pagination,
     filters,
-  }: GetEventReportDataStreamParams) {
+  }: GetEventReportDataStreamParams): AsyncGenerator<
+    EventReportResponse,
+    void,
+    undefined
+  > {
     let page: number = 0;
     const size: number = 100;
     let hasMoreData: boolean = true;

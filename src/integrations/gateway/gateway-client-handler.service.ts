@@ -39,10 +39,7 @@ export class GatewayClientHandlerService {
     this.gatewayClient.wsClientManager.on(
       'enterprises',
       async (socket, uuid, enterprisesPayload) => {
-        this.logger.log(
-          'wsClientGateway.wsClientManager "enterprises"',
-          enterprisesPayload,
-        );
+        this.logger.log('wsClientGateway.wsClientManager "enterprises"');
 
         await this.enterprisesWsHandlerService.saveEnterprisesWithConfigurations(
           enterprisesPayload,

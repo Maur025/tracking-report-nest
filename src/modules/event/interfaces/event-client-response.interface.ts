@@ -1,9 +1,9 @@
 export interface EventClientResponseDto {
-  content: Content[];
+  content: EventClientContent[];
   pagination: Pagination;
 }
 
-export interface Content {
+export interface EventClientContent {
   id: string;
   type_name: TypeName;
   device_id: string;
@@ -20,6 +20,7 @@ export interface Content {
   sensor_id: null;
   rule_devent_id: null;
   devent_id: null;
+  devent: EventClientContentDevent;
   rule_geofence_id: string;
   inout: ContentInout;
   geofence_id: string;
@@ -30,6 +31,10 @@ export interface Content {
   rule_geofence: RuleGeofence;
   vehicle: Vehicle[];
   geofence: Geofence;
+}
+
+export interface EventClientContentDevent {
+  name: string;
 }
 
 export interface Device {

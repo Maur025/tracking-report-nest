@@ -8,13 +8,13 @@ export class Enterprise extends BaseEntity {
   name: string;
 
   @Column('text', { name: 'description', nullable: true })
-  description: string | null;
+  description?: string;
 
   @Column('text', { name: 'color', nullable: true })
-  color: string | null;
+  color?: string;
 
   @Column('text', { name: 'image', nullable: true })
-  image: string | null;
+  image?: string;
 
   @OneToMany(
     () => EnterpriseConfig,

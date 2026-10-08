@@ -1,3 +1,5 @@
+import { EventReportResponse } from './event-report-response.interface.js';
+
 export interface GetEventReportDataParams {
   dbName?: string;
   dbHost?: string;
@@ -11,7 +13,7 @@ export interface GetEventReportDataParams {
 }
 
 export interface GetEventReportDataResponse {
-  data: unknown;
+  data: EventReportResponse[];
   pagination: {
     pages: number;
     rowsNumber: number;

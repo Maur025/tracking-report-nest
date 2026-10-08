@@ -8,11 +8,15 @@ export class ReportParamDto extends PaginationDto {
 
   @IsIn(['inline', 'attachment'])
   @IsOptional()
-  disposition?: string = 'inline';
+  disposition?: 'inline' | 'attachment' = 'inline';
 
   @IsString()
   @IsOptional()
   fileName: string = 'example';
+
+  @IsString()
+  @IsOptional()
+  title?: string;
 
   @IsString()
   @IsOptional()
