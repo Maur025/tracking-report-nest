@@ -12,23 +12,17 @@ export class EventController {
   async generateReportStream(
     @Query() eventReportQueryParams: EventReportQueryParams,
   ) {
+    const { format, fileName, disposition } = eventReportQueryParams;
+
     const response = await this.eventService.generateReportStream(
       eventReportQueryParams,
     );
 
-    if (!response) {
-      return;
+    if (format === 'pdf') {
+      return pdfStreamResponse(response, fileName, disposition);
     }
 
-    if (eventReportQueryParams.format === 'pdf') {
-      return pdfStreamResponse(
-        response,
-        eventReportQueryParams.fileName,
-        eventReportQueryParams.disposition,
-      );
-    }
-
-    return excelStreamResponse(response, eventReportQueryParams.fileName);
+    return excelStreamResponse(response, fileName);
   }
 
   @Get(':id')

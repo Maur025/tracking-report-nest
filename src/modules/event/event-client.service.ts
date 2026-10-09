@@ -1,5 +1,7 @@
 import { BadGatewayException, Injectable, Logger } from '@nestjs/common';
 import { HttpClient } from '@nestjs/http-client';
+import { streamPaginatedData } from '../../shared/utils/stream-paginated-data.js';
+import { transformSafeString } from '../../shared/utils/transform-safe-string.js';
 import type { EventClientResponseDto } from './interfaces/event-client-response.interface.js';
 import type {
   GetEventReportDataParams,
@@ -37,10 +39,8 @@ export class EventClientService {
         {
           query: {
             ...transformFilters,
-            page: paginationQuery.page,
-            size: paginationQuery.size,
+            ...paginationQuery,
             descending: String(paginationQuery.descending),
-            sortBy: paginationQuery.sortBy,
           },
         },
       );
@@ -69,12 +69,7 @@ export class EventClientService {
         continue;
       }
 
-      const stringValue =
-        typeof value === 'string' ||
-        typeof value === 'number' ||
-        Array.isArray(value)
-          ? String(value)
-          : JSON.stringify(value);
+      const stringValue = transformSafeString(value);
 
       switch (key) {
         case 'vehicleId': {
@@ -128,12 +123,8 @@ export class EventClientService {
     void,
     undefined
   > {
-    let page: number = 0;
-    const size: number = 100;
-    let hasMoreData: boolean = true;
-
-    while (hasMoreData) {
-      try {
+    yield* streamPaginatedData({
+      onFetchData: async (page, size) => {
         const eventData = await this.getEventReportData({
           dbName,
           dbHost,
@@ -141,31 +132,8 @@ export class EventClientService {
           filters,
         });
 
-        if (eventData.data?.length <= 0) {
-          hasMoreData = false;
-          break;
-        }
-
-        for (const event of eventData.data) {
-          yield event;
-        }
-
-        if (eventData.data.length < size) {
-          hasMoreData = false;
-          break;
-        }
-
-        page++;
-      } catch (error) {
-        this.logger.error(
-          'Failed to fetch event report data from external API',
-          error,
-        );
-        throw new BadGatewayException(
-          'Failed to fetch event report data from external API',
-          { cause: error },
-        );
-      }
-    }
+        return eventData.data;
+      },
+    });
   }
 }
