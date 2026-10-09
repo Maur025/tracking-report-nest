@@ -9,6 +9,7 @@ import { EventModule } from './modules/event/event.module.js';
 import { ReportModule } from './report/report.module.js';
 import { SharedModule } from './shared/shared.module.js';
 import { ProgressModule } from './modules/progress/progress.module.js';
+import { RulesModule } from './modules/rules/rules.module.js';
 
 @Module({
   imports: [
@@ -48,6 +49,8 @@ import { ProgressModule } from './modules/progress/progress.module.js';
     ReportModule,
 
     ProgressModule,
+
+    RulesModule,
   ],
   providers: [],
 })
