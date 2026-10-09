@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { PassThrough } from 'node:stream';
 import { ExcelReportService } from '../../report/services/excel-report.service.js';
 import { PdfReportService } from '../../report/services/pdf-report.service.js';
 import { formatDateOfTimestamp } from '../../shared/utils/format-date-of-timestamp.js';
@@ -27,7 +28,9 @@ export class EventService {
     return `This action returns a #${id} event`;
   }
 
-  async generateReportStream(eventReportQueryParams: EventReportQueryParams) {
+  async generateReportStream(
+    eventReportQueryParams: EventReportQueryParams,
+  ): Promise<PDFKit.PDFDocument | PassThrough> {
     const { databaseName, format } = eventReportQueryParams;
 
     const enterpriseConfig =
@@ -39,15 +42,13 @@ export class EventService {
       return this.handlePdf(enterpriseConfig, eventReportQueryParams);
     }
 
-    if (format === 'excel') {
-      return this.handleExcel(enterpriseConfig, eventReportQueryParams);
-    }
+    return this.handleExcel(enterpriseConfig, eventReportQueryParams);
   }
 
   private handleExcel(
     enterpriseConfig: EnterpriseConfig,
     eventReportQueryParams: EventReportQueryParams,
-  ) {
+  ): PassThrough {
     const { title, filterByLabel, zoneId } = eventReportQueryParams;
 
     return this.excelReportService.generate({
@@ -60,10 +61,10 @@ export class EventService {
         username: { value: 'Usuario de prueba' },
         filterBy: { value: filterByLabel },
         enterpriseName: {
-          value: enterpriseConfig.enterprise.name,
+          value: enterpriseConfig.enterprise?.name,
           style: { font: { bold: true, size: 12 } },
         },
-        enterpriseLogo: { value: enterpriseConfig.enterprise.image },
+        enterpriseLogo: { value: enterpriseConfig.enterprise?.image },
       },
       table: {
         headers: [
@@ -97,7 +98,7 @@ export class EventService {
   private handlePdf(
     enterpriseConfig: EnterpriseConfig,
     eventReportQueryParams: EventReportQueryParams,
-  ) {
+  ): PDFKit.PDFDocument {
     const { title, filterByLabel, zoneId } = eventReportQueryParams;
 
     return this.pdfReportService.generate({

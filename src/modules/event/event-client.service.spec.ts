@@ -1,12 +1,9 @@
-import { BadGatewayException } from '@nestjs/common';
 import { HttpClient } from '@nestjs/http-client';
 import { Test, TestingModule } from '@nestjs/testing';
 import { beforeEach, describe, expect, it, Mock, vi } from 'vitest';
 import { EventClientService } from './event-client.service.js';
-import {
-  Content,
-  Pagination,
-} from './interfaces/event-client-response.interface.js';
+import { Pagination } from './interfaces/event-client-response.interface.js';
+import { EventReportResponse } from './interfaces/event-report-response.interface.js';
 
 describe('EventClientService', () => {
   let service: EventClientService;
@@ -137,7 +134,10 @@ describe('EventClientService', () => {
   describe('getEventReportDataStream', () => {
     it('should return a stream of event report data with 1 page', async () => {
       // GIVEN
-      const events = [{ device_id: '1' }, { device_id: '2' }] as Content[];
+      const events = [
+        { device_id: '1' },
+        { device_id: '2' },
+      ] as unknown as EventReportResponse[];
 
       const params = {
         dbName: 'test',
@@ -172,12 +172,12 @@ describe('EventClientService', () => {
     it('should fetch subsequent pages until receiving less than page size', async () => {
       const firstPage = Array.from({ length: 100 }, (_, index) => ({
         id: `event-${index}`,
-      })) as Content[];
+      })) as EventReportResponse[];
 
       const secondPage = [
         { id: 'event-100' },
         { id: 'event-101' },
-      ] as Content[];
+      ] as unknown as EventReportResponse[];
 
       const getEventReportDataSpy = vi
         .spyOn(service, 'getEventReportData')
@@ -225,7 +225,9 @@ describe('EventClientService', () => {
         }
       };
 
-      await expect(consumeStream()).rejects.toThrow(BadGatewayException);
+      await expect(consumeStream()).rejects.toThrow(
+        'Error occurred while fetching data from external API',
+      );
     });
   });
 });

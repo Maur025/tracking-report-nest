@@ -8,6 +8,7 @@ import { EnterpriseModule } from './modules/enterprise/enterprise.module.js';
 import { EventModule } from './modules/event/event.module.js';
 import { ReportModule } from './report/report.module.js';
 import { SharedModule } from './shared/shared.module.js';
+import { ProgressModule } from './modules/progress/progress.module.js';
 
 @Module({
   imports: [
@@ -45,6 +46,8 @@ import { SharedModule } from './shared/shared.module.js';
     EventModule,
 
     ReportModule,
+
+    ProgressModule,
   ],
   providers: [],
 })
