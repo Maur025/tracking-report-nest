@@ -1,34 +1,27 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
+import { excelStreamResponse } from '../../shared/response/excel-stream-response.js';
+import { pdfStreamResponse } from '../../shared/response/pdf-stream-response.js';
+import { RulesReportQueryParams } from './dto/rules-report-query-params.js';
 import { RulesService } from './rules.service.js';
-import { CreateRuleDto } from './dto/create-rule.dto.js';
-import { UpdateRuleDto } from './dto/update-rule.dto.js';
 
 @Controller('rules')
 export class RulesController {
   constructor(private readonly rulesService: RulesService) {}
 
-  @Post()
-  create(@Body() createRuleDto: CreateRuleDto) {
-    return this.rulesService.create(createRuleDto);
-  }
+  @Get('reports')
+  async generateReportStream(
+    @Query() rulesReportQueryParams: RulesReportQueryParams,
+  ) {
+    const { format, fileName, disposition } = rulesReportQueryParams;
 
-  @Get()
-  findAll() {
-    return this.rulesService.findAll();
-  }
+    const response = await this.rulesService.generateReportStream(
+      rulesReportQueryParams,
+    );
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.rulesService.findOne(+id);
-  }
+    if (format === 'pdf') {
+      return pdfStreamResponse(response, fileName, disposition);
+    }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateRuleDto: UpdateRuleDto) {
-    return this.rulesService.update(+id, updateRuleDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.rulesService.remove(+id);
+    return excelStreamResponse(response, fileName);
   }
 }
