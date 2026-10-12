@@ -165,6 +165,8 @@ export class RulesService {
       zoneId,
       sortBy,
       descending,
+      type,
+      frequencyWeekday,
     } = rulesReportQueryParams;
 
     const dateFilters = getDateFilter({
@@ -186,6 +188,8 @@ export class RulesService {
         },
         filters: {
           ...dateFilters,
+          type,
+          frequencyWeekday,
         },
       });
   }

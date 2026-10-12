@@ -9,7 +9,7 @@ describe('RegistryProgressController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [RegistryProgressController],
-      providers: [RegistryProgressService],
+      providers: [{ provide: RegistryProgressService, useValue: {} }],
     }).compile();
 
     controller = module.get<RegistryProgressController>(
