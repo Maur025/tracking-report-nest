@@ -178,13 +178,3 @@ const calculateCellMaxHeight = ({
 
   return maxCellHeight;
 };
-
-/* 
-Puedes ayudarme a generar documentación precisa y detallada para este proyecto, puedes crear una carpeta docs y agregar todo lo relevante ahi, necesito que cualquier persona que lea esa documentación entienda fácilmente el proyecto, incluso si no estoy presente para explicarlo.
-
-1. Estado actual del proyecto.
-2. Tecnologías que se están utilizando conjuntamente con sus versiones.
-3. La forma en la que pueden levantar el proyecto.
-5. Documentar y explicar el propósito de todas las variables de entorno.
-6. No ahondar en enseñar como se usan las tecnologías, prefiero que les agregues el enlace a la documentación oficial, pero si debes explicar el propósito de esa tecnología en este proyecto.
-*/
