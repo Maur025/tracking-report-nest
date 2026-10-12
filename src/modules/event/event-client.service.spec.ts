@@ -96,6 +96,46 @@ describe('EventClientService', () => {
       );
     });
 
+    it('should ignore empty filter values', async () => {
+      // GIVEN
+      mockClientGet.mockResolvedValue({
+        data: { content: [], pagination: { pages: 1, rowsNumber: 0 } },
+      });
+
+      // WHEN
+      await service.getEventReportData({
+        dbName: 'test',
+        dbHost: 'http://localhost:1234',
+        filters: { vehicleId: '', ruleId: undefined, inout: null },
+      });
+
+      // THEN
+      const query = mockClientGet.mock.calls[0][1].query;
+      expect(query).not.toHaveProperty('[vehicle_id][equal]');
+      expect(query).not.toHaveProperty('[rule_id][equal]');
+      expect(query).not.toHaveProperty('[inout][equal]');
+    });
+
+    it('should forward unknown filters without transformation', async () => {
+      // GIVEN
+      mockClientGet.mockResolvedValue({
+        data: { content: [], pagination: { pages: 1, rowsNumber: 0 } },
+      });
+
+      // WHEN
+      await service.getEventReportData({
+        dbName: 'test',
+        dbHost: 'http://localhost:1234',
+        filters: { customFilter: 'abc' },
+      });
+
+      // THEN
+      expect(mockClientGet.mock.calls[0][1].query).toHaveProperty(
+        'customFilter',
+        'abc',
+      );
+    });
+
     it('should fail consuming external api', async () => {
       // GIVEN
       const requestParams = {
