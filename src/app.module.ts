@@ -10,6 +10,7 @@ import { ReportModule } from './report/report.module.js';
 import { SharedModule } from './shared/shared.module.js';
 import { ProgressModule } from './modules/progress/progress.module.js';
 import { RulesModule } from './modules/rules/rules.module.js';
+import { RegistryProgressModule } from './modules/registry-progress/registry-progress.module.js';
 
 @Module({
   imports: [
@@ -51,6 +52,8 @@ import { RulesModule } from './modules/rules/rules.module.js';
     ProgressModule,
 
     RulesModule,
+
+    RegistryProgressModule,
   ],
   providers: [],
 })
