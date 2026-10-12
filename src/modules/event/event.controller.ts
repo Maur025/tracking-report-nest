@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { excelStreamResponse } from '../../shared/response/excel-stream-response.js';
 import { pdfStreamResponse } from '../../shared/response/pdf-stream-response.js';
 import { EventReportQueryParams } from './dto/event-report-query-params.js';
@@ -23,10 +23,5 @@ export class EventController {
     }
 
     return excelStreamResponse(response, fileName);
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.eventService.findOne(+id);
   }
 }

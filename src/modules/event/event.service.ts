@@ -20,14 +20,6 @@ export class EventService {
     private readonly enterpriseConfigService: EnterpriseConfigService,
   ) {}
 
-  findAll() {
-    return `This action returns all event`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} event`;
-  }
-
   async generateReportStream(
     eventReportQueryParams: EventReportQueryParams,
   ): Promise<PDFKit.PDFDocument | PassThrough> {
