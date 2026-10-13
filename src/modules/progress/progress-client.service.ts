@@ -113,8 +113,6 @@ export class ProgressClientService {
   > {
     yield* streamPaginatedData({
       onFetchData: async (page, size) => {
-        console.log({ page, size });
-
         const progressData = await this.getProgressReportData({
           dbName,
           dbHost,

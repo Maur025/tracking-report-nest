@@ -76,7 +76,8 @@ describe('/api/events/reports e2e test', () => {
         date: '2026-09-29T16:27:17.649Z',
         zoneId: 'America/La_Paz',
       })
-      .buffer(true);
+      .buffer(true)
+      .parse(binaryParser);
 
     // THEN
     expect(response.status).toBe(200);
