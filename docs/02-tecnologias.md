@@ -62,6 +62,7 @@ Las versiones provienen de `package.json`. El símbolo `^` indica que el
 | **Vitest** | ^4.1.2 | Runner de pruebas unitarias y e2e. | https://vitest.dev |
 | **`@vitest/coverage-v8`** | ^4.1.2 | Cobertura de pruebas. | https://vitest.dev/guide/coverage |
 | **Supertest** | ^7.3.1 | Pruebas e2e de endpoints HTTP. | https://github.com/ladjs/supertest |
+| **MSW** (`msw`) | ^3.0.3 | Intercepta y simula la API HTTP externa de las empresas en las pruebas e2e. | https://mswjs.io |
 | **oxlint** | ^1.58.0 | Linter rápido (reemplaza a ESLint). | https://oxc.rs/docs/guide/usage/linter.html |
 | **`oxlint-tsgolint`** | ^7.0.2001 | Reglas *type-aware* de oxlint. | https://oxc.rs |
 | **Prettier** | ^3.4.2 | Formateo de código. | https://prettier.io/docs/ |

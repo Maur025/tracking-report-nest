@@ -14,6 +14,10 @@ TypeOrmModule.forRootAsync({
     enableWAL: true,
     autoLoadEntities: true,
     synchronize: false,
+    migrations: [
+      fileURLToPath(new URL('./database/migrations/*.{ts,js}', import.meta.url)),
+    ],
+    migrationsRun: config.getOrThrow<string>('NODE_ENV') === 'test',
   }),
 });
 ```
@@ -27,6 +31,9 @@ Puntos clave:
   `TypeOrmModule.forFeature`.
 - **`synchronize: false`** es importante: **el esquema NO se sincroniza
   automáticamente**. Todo cambio de esquema requiere una **migración**.
+- **`migrationsRun`** ejecuta las migraciones pendientes al arrancar, pero **solo
+  en `NODE_ENV=test`** (así lo levantan las pruebas e2e sobre `:memory:`). En
+  desarrollo/producción se aplican con `pnpm migration:run`.
 
 > La base de datos **no** almacena datos de rastreo; solo el **catálogo de empresas
 > y sus configuraciones**. Los datos de rastreo viven en las APIs externas.

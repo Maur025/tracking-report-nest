@@ -76,7 +76,7 @@ export class ProgressClientService {
           transformedFilters['[type][equal]'] = stringValue;
           break;
         }
-        case ' fromDate': {
+        case 'fromDate': {
           transformedFilters['[date_from][between][from]'] = stringValue;
           break;
         }

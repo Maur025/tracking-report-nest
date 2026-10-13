@@ -3,7 +3,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { beforeEach, describe, expect, it, Mock, vi } from 'vitest';
 import { ProgressClientService } from './progress-client.service.js';
 
-const buildHttpResponse = (content: unknown[] = [], pagination = { pages: 1, rowsNumber: 0 }) => ({
+const buildHttpResponse = (
+  content: unknown[] = [],
+  pagination = { pages: 1, rowsNumber: 0 },
+) => ({
   data: { content, pagination },
 });
 
@@ -31,7 +34,10 @@ describe('ProgressClientService', () => {
   describe('getProgressReportData', () => {
     it('should request the progress endpoint with default pagination', async () => {
       // WHEN
-      await service.getProgressReportData({ dbName: 'db', dbHost: 'http://host' });
+      await service.getProgressReportData({
+        dbName: 'db',
+        dbHost: 'http://host',
+      });
 
       // THEN
       expect(mockClientGet).toHaveBeenCalledWith(
@@ -91,29 +97,13 @@ describe('ProgressClientService', () => {
       expect(query).not.toHaveProperty('[name][like]');
     });
 
-    // Known debt: the `fromDate` case is declared with a leading space, so it
-    // falls through to the default and keeps the original key.
-    it('should keep the original key for a fromDate filter', async () => {
-      // WHEN
-      await service.getProgressReportData({
-        dbName: 'db',
-        dbHost: 'http://host',
-        filters: { fromDate: '2023-01-01' },
-      });
-
-      // THEN
-      const query = mockClientGet.mock.calls[0][1].query;
-      expect(query).toHaveProperty('fromDate', '2023-01-01');
-      expect(query).not.toHaveProperty('[date_from][between][from]');
-    });
-
     it('should map the response through the report mapper', async () => {
       // GIVEN
       mockClientGet.mockResolvedValue(
-        buildHttpResponse(
-          [{ name: 'Ruta escolar', frequency: [] }],
-          { pages: 1, rowsNumber: 1 },
-        ),
+        buildHttpResponse([{ name: 'Ruta escolar', frequency: [] }], {
+          pages: 1,
+          rowsNumber: 1,
+        }),
       );
 
       // WHEN
@@ -136,7 +126,9 @@ describe('ProgressClientService', () => {
       // WHEN / THEN
       await expect(
         service.getProgressReportData({ dbName: 'db', dbHost: 'http://host' }),
-      ).rejects.toThrow('Failed to fetch progress report data from external API');
+      ).rejects.toThrow(
+        'Failed to fetch progress report data from external API',
+      );
     });
   });
 

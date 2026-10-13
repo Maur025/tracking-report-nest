@@ -25,7 +25,7 @@ export const environmentSchema = object({
 
   DB_URL: _string().nonempty().default('./database/tracking-report.sqlite'),
 
-  NODE_ENV: _string().optional().default('default'),
+  NODE_ENV: _string().optional().default('development'),
 });
 
 export type EnvironmentSchema = z.infer<typeof environmentSchema>;

@@ -33,6 +33,7 @@ número con `parseInt`.
 | `STORAGE_INTERVAL_HRS` | number (int) | *(ver nota)* | `1` | Intervalo (horas) del evento interno `time.storage`. |
 | `SAVE_INTERVAL_MIN` | number (int) | `5` | `5` | Intervalo (minutos) del evento interno `time.save`. |
 | `DB_URL` | string | `./database/tracking-report.sqlite` | `./database/tracking-report.sqlite` | Ruta del archivo SQLite usado por la aplicación. |
+| `NODE_ENV` | string | `default` | *(sin definir)* | Entorno de ejecución. Selecciona el archivo `.env.<NODE_ENV>` y activa `migrationsRun` cuando vale `test`. |
 
 ---
 
@@ -78,7 +79,11 @@ en `this.events`:
 
 - **`DB_URL`** — Ruta del archivo SQLite para la aplicación en ejecución
   (`TypeOrmModule.forRootAsync`). **No** es usada por el `DataSource` de
-  migraciones, que tiene la ruta fija en `src/database/data-source.ts`.
+  migraciones, que tiene la ruta fija en `src/database/data-source.ts`. En las
+  pruebas vale `:memory:`.
+- **`NODE_ENV`** — Entorno (`default` si no se define). `ConfigModule` lo usa para
+  elegir `.env.<NODE_ENV>` (`vitest.config.e2e.ts` fija `test`) y `TypeOrmModule`
+  ejecuta las migraciones al arrancar (`migrationsRun`) cuando vale `test`.
 
 ---
 
@@ -125,7 +130,7 @@ PING_INTERVAL_MS=5000
 STORAGE_INTERVAL_HRS=1
 SAVE_INTERVAL_MIN=5
 
-DB_URL=./database/test.db
+DB_URL=:memory:
 ```
 
 ---

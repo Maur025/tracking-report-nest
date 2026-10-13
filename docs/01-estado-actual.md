@@ -54,6 +54,14 @@ Cada uno puede devolverse en formato **`excel`** (por defecto) o **`pdf`**.
 - **Scheduler interno:** `SchedulerCommonService` emite eventos recurrentes
   (`time.ping`, `time.save`, `time.storage`) con intervalos configurables.
 
+### Pruebas
+
+- **Unitarias:** Vitest, junto a cada archivo (`*.spec.ts`).
+- **E2E:** cubren los **cuatro reportes** (`test/*.e2e-spec.ts`). La API externa de
+  la empresa se simula con **MSW** (`test/setup/msw/`) y la base de datos se levanta
+  en memoria (`DB_URL=:memory:`, `NODE_ENV=test`, con migraciones automáticas).
+  Detalle en [08 — Testing y calidad](./08-testing-y-calidad.md).
+
 ## Estructura de carpetas (resumen)
 
 ```
@@ -88,18 +96,13 @@ src/
 | # | Hallazgo | Ubicación | Impacto |
 |---|---|---|---|
 | 1 | **Nombre de variable inconsistente:** el esquema define `STORAGE_INTERNAL_HRS`, pero `.env`, `.env.test` y el scheduler usan `STORAGE_INTERVAL_HRS` (typo). El scheduler lee el valor real vía `ConfigService`, que accede a `process.env`, no al esquema validado. | `src/config/environment.schema.ts`, `.env`, `.env.test`, `src/integrations/scheduler/scheduler-common.service.ts` | Confuso; el valor del esquema nunca coincide con el del `.env`. |
-| 2 | **README desactualizado:** menciona el script `pnpm generate:migration` (el script real es `migration:generate`) y ejemplos que no coinciden con `package.json`. | `README.md` | Un desarrollador nuevo sigue instrucciones que no funcionan. |
-| 3 | **DataSource de migraciones con ruta fija:** `data-source.ts` hardcodea `database/tracking-report.sqlite` y no lee `DB_URL` del entorno. | `src/database/data-source.ts` | Migrar una BD distinta a la fija requiere editar código. |
-| 4 | **CRUD de empresas incompleto:** `findAll`, `findOne`, `update` y `remove` devuelven strings de ejemplo en lugar de operar sobre la base de datos. | `src/modules/enterprise/enterprise.service.ts` | Los endpoints `GET/PATCH/DELETE /api/enterprises` no funcionan realmente. |
-| 5 | **Test e2e desalineado:** `app.e2e-spec.ts` espera `Hello World!` en `GET /`, pero la app usa prefijo global `api` y no existe esa ruta. | `test/app.e2e-spec.ts`, `src/main.ts` | El test e2e falla con el estado actual. |
-| 6 | **`console.log` de depuración** en el flujo de obtención de datos de progreso. | `src/modules/progress/progress-client.service.ts` | Ruido en logs. |
-| 7 | **Texto "Usuario de prueba"** hardcodeado en los encabezados de todos los reportes. | `src/modules/*/*.service.ts` | El usuario real no se refleja en los reportes. |
+| 2 | **DataSource de migraciones con ruta fija:** `data-source.ts` hardcodea `database/tracking-report.sqlite` y no lee `DB_URL` del entorno. | `src/database/data-source.ts` | Migrar una BD distinta a la fija requiere editar código. |
+| 3 | **CRUD de empresas incompleto:** `findAll`, `findOne`, `update` y `remove` devuelven strings de ejemplo en lugar de operar sobre la base de datos. | `src/modules/enterprise/enterprise.service.ts` | Los endpoints `GET/PATCH/DELETE /api/enterprises` no funcionan realmente. |
+| 4 | **Texto "Usuario de prueba"** hardcodeado en los encabezados de todos los reportes. | `src/modules/*/*.service.ts` | El usuario real no se refleja en los reportes. |
 
 ## Próximos pasos sugeridos (para futuras iteraciones)
 
 - Completar el CRUD real de empresas.
 - Unificar el nombre de la variable de almacenamiento y hacer que el scheduler lea
   del `ConfigService` validado.
-- Actualizar el `README.md` raíz para que apunte a `docs/`.
-- Corregir o eliminar el test e2e desalineado.
 - Resolver el "Usuario de prueba" con el usuario autenticado real.
