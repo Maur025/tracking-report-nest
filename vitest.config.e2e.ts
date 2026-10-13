@@ -9,6 +9,7 @@ export default defineConfig({
     env: {
       NODE_ENV: 'test',
     },
+    setupFiles: ['./test/setup/e2e-test-setup.ts'],
   },
   resolve: {
     tsconfigPaths: true,

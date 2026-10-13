@@ -2,15 +2,16 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { HttpClientModule } from '@nestjs/http-client';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { fileURLToPath } from 'node:url';
 import { environmentSchema } from './config/environment.schema.js';
 import { IntegrationsModule } from './integrations/integrations.module.js';
 import { EnterpriseModule } from './modules/enterprise/enterprise.module.js';
 import { EventModule } from './modules/event/event.module.js';
+import { ProgressModule } from './modules/progress/progress.module.js';
+import { RegistryProgressModule } from './modules/registry-progress/registry-progress.module.js';
+import { RulesModule } from './modules/rules/rules.module.js';
 import { ReportModule } from './report/report.module.js';
 import { SharedModule } from './shared/shared.module.js';
-import { ProgressModule } from './modules/progress/progress.module.js';
-import { RulesModule } from './modules/rules/rules.module.js';
-import { RegistryProgressModule } from './modules/registry-progress/registry-progress.module.js';
 
 @Module({
   imports: [
@@ -31,6 +32,12 @@ import { RegistryProgressModule } from './modules/registry-progress/registry-pro
         enableWAL: true,
         autoLoadEntities: true,
         synchronize: false,
+        migrations: [
+          fileURLToPath(
+            new URL('./database/migrations/*.{ts,js}', import.meta.url),
+          ),
+        ],
+        migrationsRun: config.getOrThrow<string>('NODE_ENV') === 'test',
       }),
     }),
 
