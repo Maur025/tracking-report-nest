@@ -48,11 +48,10 @@ Cada uno puede devolverse en formato **`excel`** (por defecto) o **`pdf`**.
   y fuentes locales (Inter, Roboto) en `src/report/fonts/`.
 - **Excel:** ExcelJS en modo streaming (`WorkbookWriter`).
 
-### Integración y scheduler
+### Integración con el processor
 
 - **WebSocket al processor:** `GatewayClientHandlerService` + `GatewayConnectionConfig`.
-- **Scheduler interno:** `SchedulerCommonService` emite eventos recurrentes
-  (`time.ping`, `time.save`, `time.storage`) con intervalos configurables.
+  El evento `enterprises` alimenta SQLite vía `EnterprisesWsHandlerService`.
 
 ### Pruebas
 
@@ -75,7 +74,7 @@ src/
 │   └── migrations/            # Migraciones SQL generadas
 ├── integrations/
 │   ├── gateway/               # Cliente WS al processor + manejo de payload de empresas
-│   ├── scheduler/             # Intervalos internos (ping/save/storage)
+│   ├── scheduler/             # Código muerto (a eliminar), ver deuda técnica
 │   └── integrations.module.ts
 ├── modules/
 │   ├── enterprise/            # CRUD + configuración de empresas (SQLite)
@@ -95,14 +94,17 @@ src/
 
 | # | Hallazgo | Ubicación | Impacto |
 |---|---|---|---|
-| 1 | **Nombre de variable inconsistente:** el esquema define `STORAGE_INTERNAL_HRS`, pero `.env`, `.env.test` y el scheduler usan `STORAGE_INTERVAL_HRS` (typo). El scheduler lee el valor real vía `ConfigService`, que accede a `process.env`, no al esquema validado. | `src/config/environment.schema.ts`, `.env`, `.env.test`, `src/integrations/scheduler/scheduler-common.service.ts` | Confuso; el valor del esquema nunca coincide con el del `.env`. |
+| 1 | **Nombre de variable inconsistente:** el esquema define `STORAGE_INTERNAL_HRS`, pero `.env`, `.env.test` y el scheduler usan `STORAGE_INTERVAL_HRS` (typo). El scheduler lee el valor real vía `ConfigService`, que accede a `process.env`, no al esquema validado. | `src/config/environment.schema.ts`, `.env`, `.env.test`, `src/integrations/scheduler/scheduler-common.service.ts` | Confuso; el valor del esquema nunca coincide con el del `.env`. Desaparece al eliminar el scheduler (#5). |
 | 2 | **DataSource de migraciones con ruta fija:** `data-source.ts` hardcodea `database/tracking-report.sqlite` y no lee `DB_URL` del entorno. | `src/database/data-source.ts` | Migrar una BD distinta a la fija requiere editar código. |
 | 3 | **CRUD de empresas incompleto:** `findAll`, `findOne`, `update` y `remove` devuelven strings de ejemplo en lugar de operar sobre la base de datos. | `src/modules/enterprise/enterprise.service.ts` | Los endpoints `GET/PATCH/DELETE /api/enterprises` no funcionan realmente. |
 | 4 | **Texto "Usuario de prueba"** hardcodeado en los encabezados de todos los reportes. | `src/modules/*/*.service.ts` | El usuario real no se refleja en los reportes. |
+| 5 | **Scheduler sin uso:** `SchedulerCommonService` se registra en `IntegrationsModule` pero nunca se inyecta ni se llama a `start()`. Se añadió creyendo que era necesario para el gateway; no lo es. | `src/integrations/scheduler/`, `src/integrations/integrations.module.ts` | Código muerto; sostiene variables de entorno (`PING_INTERVAL_MS`, `STORAGE_INTERNAL_HRS`/`STORAGE_INTERVAL_HRS`, `SAVE_INTERVAL_MIN`) que tampoco tienen efecto. |
 
 ## Próximos pasos sugeridos (para futuras iteraciones)
 
+- Eliminar el scheduler (`SchedulerCommonService` y sus variables de entorno), ya que no
+  tiene utilidad real.
 - Completar el CRUD real de empresas.
-- Unificar el nombre de la variable de almacenamiento y hacer que el scheduler lea
-  del `ConfigService` validado.
+- Unificar el nombre de la variable de almacenamiento (si el scheduler no se elimina) y
+  hacer que lea del `ConfigService` validado.
 - Resolver el "Usuario de prueba" con el usuario autenticado real.

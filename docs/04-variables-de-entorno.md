@@ -29,11 +29,11 @@ número con `parseInt`.
 | `WS_GATEWAY_HOST_PROCESSOR` | string | `localhost` | `172.20.50.123` | Host del *gateway/processor* al que se conecta por WebSocket. |
 | `WS_GATEWAY_PORT_PROCESSOR` | number (int) | `7170` | `7170` | Puerto del *gateway/processor*. |
 | `UUID` | string | `f0f0f0f0` | `c2dd86f2` | Identificador único con el que el servicio se registra ante el *processor*. |
-| `PING_INTERVAL_MS` | number (int) | `5000` | `5000` | Intervalo (ms) del evento interno `time.ping`. |
-| `STORAGE_INTERVAL_HRS` | number (int) | *(ver nota)* | `1` | Intervalo (horas) del evento interno `time.storage`. |
-| `SAVE_INTERVAL_MIN` | number (int) | `5` | `5` | Intervalo (minutos) del evento interno `time.save`. |
+| `PING_INTERVAL_MS` | number (int) | `5000` | `5000` | Intervalo (ms) pensado para el evento `time.ping` (scheduler sin uso). |
+| `STORAGE_INTERVAL_HRS` | number (int) | *(ver nota)* | `1` | Intervalo (horas) pensado para el evento `time.storage` (scheduler sin uso). |
+| `SAVE_INTERVAL_MIN` | number (int) | `5` | `5` | Intervalo (minutos) pensado para el evento `time.save` (scheduler sin uso). |
 | `DB_URL` | string | `./database/tracking-report.sqlite` | `./database/tracking-report.sqlite` | Ruta del archivo SQLite usado por la aplicación. |
-| `NODE_ENV` | string | `default` | *(sin definir)* | Entorno de ejecución. Selecciona el archivo `.env.<NODE_ENV>` y activa `migrationsRun` cuando vale `test`. |
+| `NODE_ENV` | string | `development` | *(sin definir)* | Entorno de ejecución. Selecciona el archivo `.env.<NODE_ENV>` y activa `migrationsRun` cuando vale `test`. |
 
 ---
 
@@ -60,20 +60,22 @@ número con `parseInt`.
   listener del evento `enterprises`.
 - **`UUID`** — Identificador de esta instancia frente al *processor*.
 
-### Intervalos internos (scheduler)
+### Intervalos internos (scheduler, código muerto)
 
-Consumidos por `SchedulerCommonService`, que crea tres intervalos y dispara eventos
-en `this.events`:
+Estas variables solo las lee `SchedulerCommonService`, que **no tiene utilidad real**:
+se registra en `IntegrationsModule` pero nunca se inyecta ni se llama a `start()`, así
+que no llega a crear ningún intervalo. Se añadió creyendo que hacía falta para el
+gateway y está pendiente de eliminar (ver [01 — Estado actual](./01-estado-actual.md)).
 
-- **`PING_INTERVAL_MS`** → evento `time.ping`.
-- **`STORAGE_INTERVAL_HRS`** → evento `time.storage` (se multiplica ×3600×1000).
-- **`SAVE_INTERVAL_MIN`** → evento `time.save` (se multiplica ×60×1000).
+- **`PING_INTERVAL_MS`** → pensado para el evento `time.ping`.
+- **`STORAGE_INTERVAL_HRS`** → pensado para el evento `time.storage`.
+- **`SAVE_INTERVAL_MIN`** → pensado para el evento `time.save`.
 
 > ⚠️ **Inconsistencia conocida:** el esquema Zod define `STORAGE_INTERNAL_HRS`
 > (con "N", no "V"), mientras que `.env`, `.env.test` y `SchedulerCommonService`
 > usan `STORAGE_INTERVAL_HRS`. Como Zod no está en modo estricto, la variable del
-> `.env` se conserva en `process.env` y el scheduler la lee igual, pero el esquema
-> valida un nombre distinto. Ver [01 — Estado actual](./01-estado-actual.md).
+> `.env` se conserva en `process.env` y el servicio la lee igual, pero el esquema
+> valida un nombre distinto. Al eliminar el scheduler, estas variables desaparecen.
 
 ### Base de datos
 
@@ -81,7 +83,7 @@ en `this.events`:
   (`TypeOrmModule.forRootAsync`). **No** es usada por el `DataSource` de
   migraciones, que tiene la ruta fija en `src/database/data-source.ts`. En las
   pruebas vale `:memory:`.
-- **`NODE_ENV`** — Entorno (`default` si no se define). `ConfigModule` lo usa para
+- **`NODE_ENV`** — Entorno (`development` si no se define). `ConfigModule` lo usa para
   elegir `.env.<NODE_ENV>` (`vitest.config.e2e.ts` fija `test`) y `TypeOrmModule`
   ejecuta las migraciones al arrancar (`migrationsRun`) cuando vale `test`.
 
