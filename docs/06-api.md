@@ -206,5 +206,5 @@ Actualmente **no operan sobre la base de datos** (devuelven texto de ejemplo). V
 |---|---|
 | `200` | Reporte o empresa devueltos correctamente. |
 | `400` | Query params/body inválidos (validación `class-validator`). |
-| `404` | No existe configuración de empresa para el `databaseName` (`findOneOrFail`). |
+| `500` | No existe configuración de empresa para el `databaseName` (`findOneOrFail` lanza `EntityNotFoundError`, que Nest mapea a `500`). |
 | `502` | Fallo al consultar la API externa de la empresa (`BadGatewayException`). |

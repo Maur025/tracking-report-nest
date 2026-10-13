@@ -48,7 +48,6 @@ Este es un servicio *backend* de larga duración que:
 
 - escucha HTTP en `APP_PORT`,
 - abre un WebSocket saliente hacia el *processor*,
-- mantiene intervalos internos (scheduler),
 - persiste en un archivo SQLite (`DB_URL`).
 
 Consideraciones:

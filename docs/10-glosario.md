@@ -35,7 +35,7 @@ Términos del dominio y técnicos usados a lo largo del proyecto.
 | **Upsert** | Insertar o actualizar si ya existe (por clave de conflicto). |
 | **Prefijo global** | `api`, aplicado a todas las rutas en `main.ts`. |
 | **ValidationPipe** | Pipe global de Nest que valida y transforma DTOs (`whitelist`, `forbidNonWhitelisted`, `transform`). |
-| **Scheduler** | Servicio interno (`SchedulerCommonService`) que dispara eventos recurrentes. |
+| **Scheduler** | Servicio interno (`SchedulerCommonService`) pensado para disparar eventos recurrentes; hoy es **código muerto** (no se inyecta ni se arranca). |
 | **ESM** | *ECMAScript Modules*; el proyecto es `"type": "module"` y usa imports con extensión `.js`. |
 | **type-aware linting** | Linting que usa información de tipos (oxlint + tsgolint). |
 | **MSW** | *Mock Service Worker*: intercepta peticiones HTTP en las pruebas e2e para simular la API externa de cada empresa. |

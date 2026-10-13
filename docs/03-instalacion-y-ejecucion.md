@@ -70,9 +70,6 @@ Detalle de los scripts (definidos en `package.json`):
 | `migration:revert` | `nest build && typeorm migration:revert -d dist/database/data-source.js` |
 | `migration:validate` | `nest build && typeorm schema:log -d dist/database/data-source.js` |
 
-> ⚠️ El `README.md` raíz menciona `pnpm generate:migration`, que **no existe**.
-> Usa los scripts de la tabla anterior.
-
 ## 4. Ejecutar el proyecto
 
 ```bash

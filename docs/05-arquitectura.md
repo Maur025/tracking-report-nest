@@ -53,7 +53,8 @@ Para ver el grafo de dependencias entre módulos NestJS, consulta
 - Registra un **`ValidationPipe` global** con:
   - `whitelist: true` (elimina propiedades no declaradas),
   - `forbidNonWhitelisted: true` (rechaza propiedades desconocidas),
-  - `transform: true` (convierte tipos según los DTOs).
+  - `transform: true` (convierte tipos según los DTOs),
+  - `transformOptions: { exposeUnsetFields: false }` (no expone campos sin definir).
 - Escucha en `APP_PORT`.
 
 `src/app.module.ts` registra:
@@ -65,7 +66,7 @@ Para ver el grafo de dependencias entre módulos NestJS, consulta
 | `HttpClientModule.register` | Cliente HTTP global con timeout `10s`. |
 | `EnterpriseModule` | CRUD y configuración de empresas. |
 | `SharedModule` | `TransactionHandler` reutilizable. |
-| `IntegrationsModule` | Gateway WS + scheduler. |
+| `IntegrationsModule` | Gateway WS (el `SchedulerCommonService` que registra es código muerto, ver más abajo). |
 | `EventModule` / `ProgressModule` / `RulesModule` / `RegistryProgressModule` | Reportes. |
 
 Las migraciones se registran por glob (`fileURLToPath(new URL('./database/migrations/*.{ts,js}', import.meta.url))`) y solo se ejecutan automáticamente al arrancar si `NODE_ENV === 'test'`.
@@ -79,6 +80,7 @@ flowchart TB
     AppModule --> HttpClientModule["HttpClientModule.register"]
     AppModule --> SharedModule
     AppModule --> IntegrationsModule
+    AppModule --> ReportModule
     AppModule --> EnterpriseModule
     AppModule --> EventModule
     AppModule --> ProgressModule
@@ -222,11 +224,16 @@ sequenceDiagram
     Tx->>DB: COMMIT
 ```
 
-## Scheduler interno
+## Scheduler interno (código muerto)
 
-`SchedulerCommonService` (scope `TRANSIENT`) mantiene un mapa de eventos y crea tres
-`setInterval` al ejecutar `start()`. Otros componentes pueden suscribirse con `on()`
-para ejecutar lógica periódica (`time.ping`, `time.save`, `time.storage`).
+`SchedulerCommonService` (scope `TRANSIENT`) mantiene un mapa de eventos y, al ejecutar
+`start()`, crearía tres `setInterval` para los eventos `time.ping`, `time.save` y
+`time.storage`.
+
+Sin embargo, **actualmente no se usa**: `IntegrationsModule` lo registra como *provider*
+pero nadie lo inyecta ni llama a `start()`, por lo que no crea ningún intervalo. Se añadió
+creyendo que era necesario para el gateway y está pendiente de eliminar (ver
+[01 — Estado actual](./01-estado-actual.md)).
 
 ## Patrones y principios destacados
 
