@@ -7,9 +7,10 @@
 | **Vitest** | Runner de pruebas unitarias y e2e. |
 | **`@vitest/coverage-v8`** | Cobertura. |
 | **Supertest** | Peticiones HTTP en pruebas e2e. |
+| **MSW** (`msw`) | Intercepta y simula la API HTTP externa de cada empresa en las pruebas e2e. |
 | **oxlint + oxlint-tsgolint** | Linting (incluye reglas *type-aware*). |
 | **Prettier** | Formateo. |
-| **GitHub Actions** | Ejecuta lint + tests + build en CI. |
+| **GitHub Actions** | Ejecuta lint + tests (unit + e2e) + build en CI. |
 
 ## Configuración de Vitest
 
@@ -38,11 +39,15 @@ test: {
   include: ['**/*.e2e-spec.ts'],
   environment: 'node',
   env: { NODE_ENV: 'test' },
+  setupFiles: ['./test/setup/e2e-test-setup.ts'],
 }
 ```
 
 - Incluye `*.e2e-spec.ts`.
-- Fuerza `NODE_ENV=test`, por lo que la app carga `.env.test`.
+- Fuerza `NODE_ENV=test`, por lo que la app carga `.env.test` (con `DB_URL=:memory:`
+  y migraciones automáticas al arrancar).
+- `setupFiles` arranca el servidor **MSW** antes de cada archivo (`listen`), resetea
+  los handlers tras cada test y lo cierra al final.
 
 ## Convenciones de nombres
 
@@ -60,9 +65,44 @@ pnpm test:debug    # con inspector (--inspect-brk)
 pnpm test:e2e      # end-to-end
 ```
 
-> ⚠️ El test e2e actual (`test/app.e2e-spec.ts`) espera `Hello World!` en `GET /`,
-> ruta que no existe con el prefijo `api`. Ver
-> [01 — Estado actual](./01-estado-actual.md).
+> La suite e2e cubre los **cuatro reportes** y valida tanto la respuesta `pdf`
+> como la `excel` (firmas `%PDF` y `PK\x03\x04`). Ver más abajo.
+
+## Pruebas E2E (MSW)
+
+Las pruebas e2e (`test/*.e2e-spec.ts`) levantan la aplicación completa con
+`createTestApp` y sustituyen la API externa de la empresa por **MSW**, de modo que
+no se necesita ninguna dependencia de red real.
+
+### Archivos de soporte (`test/setup/`)
+
+| Archivo | Rol |
+|---|---|
+| `create-test-app.ts` | Crea la app Nest a partir de `AppModule`, aplica CORS, prefijo `api` y `ValidationPipe` (igual que `main.ts`). |
+| `e2e-test-setup.ts` | `setupFiles`: arranca/limpia/cierra el servidor MSW (`beforeAll`/`afterEach`/`afterAll`). |
+| `clean-database.ts` | Vacía `enterprise_configs` y `enterprises` antes de cada test. |
+| `seed-enterprise-config.ts` | Inserta una empresa y su configuración (`host: event-api-test`) para que los reportes resuelvan la conexión. |
+| `utils.ts` | `binaryParser` para que Supertest entregue la respuesta binaria como `Buffer`. |
+| `msw/msw-server.ts` | Instancia de `setupServer(...mswHandlers)`. |
+| `msw/msw-handlers.ts` | Agrupa los handlers de eventos, reglas, progreso y progreso de registro. |
+| `msw/*-handler.ts` | Respuestas simuladas de la API externa por tipo de reporte. |
+
+### Patrón de un test
+
+```ts
+app = await createTestApp();          // app completa
+await cleanDatabase(dataSource);
+await seedEnterpriseConfig(dataSource);
+
+const response = await request(app.getHttpServer())
+  .get('/api/events/reports')
+  .query({ databaseName: 'enterprise_1_db', format: 'pdf', /* ... */ })
+  .buffer(true)
+  .parse(binaryParser);
+```
+
+Se verifican los casos `400` (faltan params), `500` (empresa inexistente) y `200`
+(archivo `pdf`/`excel` válido).
 
 ## Linting (oxlint)
 
@@ -116,7 +156,8 @@ Pasos:
 4. Configura pnpm + Node 24 (con caché).
 5. `pnpm lint`
 6. `pnpm test`
-7. `pnpm build`
+7. `pnpm test:e2e`
+8. `pnpm build`
 
 ```mermaid
 flowchart LR
@@ -124,7 +165,8 @@ flowchart LR
     B --> C["Setup pnpm + Node 24"]
     C --> D["pnpm lint"]
     D --> E["pnpm test"]
-    E --> F["pnpm build"]
+    E --> G["pnpm test:e2e"]
+    G --> F["pnpm build"]
 ```
 
 ## Dependabot
@@ -137,7 +179,7 @@ flowchart LR
 ## Buenas prácticas al contribuir
 
 - Añade/actualiza pruebas junto al código (`*.spec.ts`).
-- Mantén `pnpm lint` y `pnpm test` en verde antes del PR.
+- Mantén `pnpm lint`, `pnpm test` y `pnpm test:e2e` en verde antes del PR.
 - No rompas el patrón de los módulos de reporte (controller → service → client →
   mapper).
 - Respeta el ESM: imports con extensión `.js`.

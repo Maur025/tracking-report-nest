@@ -59,12 +59,12 @@ Consideraciones:
 | **Conectividad al processor** | Habilita salida hacia `WS_GATEWAY_HOST_PROCESSOR:WS_GATEWAY_PORT_PROCESSOR`. |
 | **`UUID` único** | Cada instancia debe tener un `UUID` distinto ante el *processor*. |
 | **`APP_PORT` accesible** | El *processor* usa `portHttp` (de `APP_PORT`) para llamar al servicio. |
-| **Migraciones** | Ejecútalas como paso de despliegue (`pnpm migration:run`). |
+| **Migraciones** | Ejecútalas como paso de despliegue (`pnpm migration:run`). En producción `migrationsRun` está desactivado (solo se activa con `NODE_ENV=test`). |
 
 ## Pipeline
 
-- **CI:** `.github/workflows/ci.yml` valida `lint` + `test` + `build` en cada PR/push
-  a `main`/`develop` (ver [08 — Testing y calidad](./08-testing-y-calidad.md)).
+- **CI:** `.github/workflows/ci.yml` valida `lint` + `test` + `test:e2e` + `build` en
+  cada PR/push a `main`/`develop` (ver [08 — Testing y calidad](./08-testing-y-calidad.md)).
 - **Dependabot:** actualiza dependencias semanalmente.
 - **Deploy:** `pnpm deploy` (`@nestjs/mau`).
 

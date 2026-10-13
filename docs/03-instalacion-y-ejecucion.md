@@ -105,6 +105,10 @@ La base SQLite se guarda en `database/tracking-report.sqlite` (más los archivos
 `-wal` y `-shm` por el modo WAL). La carpeta `database/` y los `*.sqlite` están en
 `.gitignore`, por lo que **no se versionan**.
 
+> En las pruebas e2e la base se levanta **en memoria** (`.env.test` define
+> `DB_URL=:memory:` y `NODE_ENV=test`, lo que además ejecuta las migraciones al
+> arrancar). No se escribe ningún archivo `.sqlite`.
+
 ## Scripts disponibles (referencia completa)
 
 | Script | Qué hace |
@@ -130,5 +134,5 @@ La base SQLite se guarda en `database/tracking-report.sqlite` (más los archivos
 | `pnpm install` falla con `tracking-common` | Sin acceso SSH a GitHub | Configura tu clave SSH (`ssh -T git@github.com`). |
 | Los filtros por `STORAGE_INTERVAL_HRS` no toman el valor esperado | Inconsistencia de nombre de variable (ver [01 — Estado actual](./01-estado-actual.md)) | Revisar el esquema Zod y el `.env`. |
 | Las migraciones no encuentran entidades | No se compiló (`nest build`) antes | Los scripts ya incluyen `nest build`. |
-| El e2e falla en `GET /` esperando `Hello World!` | Test desalineado con el prefijo `api` | Ver deuda técnica en [01 — Estado actual](./01-estado-actual.md). |
+| Las pruebas e2e fallan al resolver la API externa | MSW no intercepta la petición o los handlers no cubren la ruta | Revisa los handlers en `test/setup/msw/` y que `vitest.config.e2e.ts` cargue `setupFiles`. |
 | No se encuentra la fuente del PDF | Se resolvía desde `src/report/fonts` | Ejecutar desde la raíz del proyecto (usa `cwd()`). |

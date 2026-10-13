@@ -48,6 +48,7 @@ Para ver el grafo de dependencias entre módulos NestJS, consulta
 `src/main.ts`:
 
 - Crea la app Nest desde `AppModule`.
+- Habilita **CORS** con `origin: '*'` (métodos `GET/HEAD/PUT/PATCH/POST/DELETE`).
 - Fija el **prefijo global `api`** en todas las rutas.
 - Registra un **`ValidationPipe` global** con:
   - `whitelist: true` (elimina propiedades no declaradas),
@@ -60,12 +61,14 @@ Para ver el grafo de dependencias entre módulos NestJS, consulta
 | Registro | Propósito |
 |---|---|
 | `ConfigModule.forRoot` | Carga `.env` con validación Zod global. |
-| `TypeOrmModule.forRootAsync` | Conexión SQLite (`better-sqlite3`), WAL activado, `autoLoadEntities`, `synchronize: false`. |
+| `TypeOrmModule.forRootAsync` | Conexión SQLite (`better-sqlite3`), WAL activado, `autoLoadEntities`, `synchronize: false` y `migrationsRun` cuando `NODE_ENV==='test'`. |
 | `HttpClientModule.register` | Cliente HTTP global con timeout `10s`. |
 | `EnterpriseModule` | CRUD y configuración de empresas. |
 | `SharedModule` | `TransactionHandler` reutilizable. |
 | `IntegrationsModule` | Gateway WS + scheduler. |
 | `EventModule` / `ProgressModule` / `RulesModule` / `RegistryProgressModule` | Reportes. |
+
+Las migraciones se registran por glob (`fileURLToPath(new URL('./database/migrations/*.{ts,js}', import.meta.url))`) y solo se ejecutan automáticamente al arrancar si `NODE_ENV === 'test'`.
 
 ### Grafo de módulos
 

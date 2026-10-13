@@ -38,6 +38,9 @@ Términos del dominio y técnicos usados a lo largo del proyecto.
 | **Scheduler** | Servicio interno (`SchedulerCommonService`) que dispara eventos recurrentes. |
 | **ESM** | *ECMAScript Modules*; el proyecto es `"type": "module"` y usa imports con extensión `.js`. |
 | **type-aware linting** | Linting que usa información de tipos (oxlint + tsgolint). |
+| **MSW** | *Mock Service Worker*: intercepta peticiones HTTP en las pruebas e2e para simular la API externa de cada empresa. |
+| **E2E** | *End-to-end*: pruebas que levantan la app completa y validan el flujo HTTP de cada reporte. |
+| **`:memory:`** | Ruta especial de SQLite que crea la base de datos en memoria (sin archivo); usada por las pruebas. |
 
 ## Abreviaturas
 
