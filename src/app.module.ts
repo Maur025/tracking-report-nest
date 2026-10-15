@@ -4,6 +4,7 @@ import { HttpClientModule } from '@nestjs/http-client';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { fileURLToPath } from 'node:url';
 import { environmentSchema } from './config/environment.schema.js';
+import { QueueModule } from './infrastructure/queue/queue.module.js';
 import { IntegrationsModule } from './integrations/integrations.module.js';
 import { EnterpriseModule } from './modules/enterprise/enterprise.module.js';
 import { EventModule } from './modules/event/event.module.js';
@@ -51,6 +52,8 @@ import { SharedModule } from './shared/shared.module.js';
     SharedModule,
 
     IntegrationsModule,
+
+    QueueModule,
 
     EventModule,
 
