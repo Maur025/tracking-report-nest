@@ -26,6 +26,15 @@ export const environmentSchema = object({
   DB_URL: _string().nonempty().default('./database/tracking-report.sqlite'),
 
   NODE_ENV: _string().optional().default('development'),
+
+  REDIS_HOST: _string().nonempty().default('localhost'),
+  REDIS_PORT: receiveStrTransformNumber('6379'),
+
+  BULLMQ_JOB_ATTEMPTS: receiveStrTransformNumber('3'),
+  BULLMQ_JOB_BACKOFF_TYPE: _string().nonempty().default('exponential'),
+  BULLMQ_JOB_BACKOFF_DELAY: receiveStrTransformNumber('1000'),
+  BULLMQ_JOB_REMOVE_ON_COMPLETE: receiveStrTransformNumber('100'),
+  BULLMQ_JOB_REMOVE_ON_FAIL: receiveStrTransformNumber('500'),
 });
 
 export type EnvironmentSchema = z.infer<typeof environmentSchema>;
