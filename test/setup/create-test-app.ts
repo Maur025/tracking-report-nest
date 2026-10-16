@@ -8,6 +8,7 @@ export const createTestApp = async (): Promise<INestApplication> => {
   }).compile();
 
   const app = moduleFixture.createNestApplication();
+  app.useLogger(false);
 
   app.enableCors({
     origin: '*',
