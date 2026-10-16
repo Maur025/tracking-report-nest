@@ -12,8 +12,8 @@ import { ProgressModule } from './modules/progress/progress.module.js';
 import { RegistryProgressModule } from './modules/registry-progress/registry-progress.module.js';
 import { RulesModule } from './modules/rules/rules.module.js';
 import { ReportGeneratorModule } from './report-generator/report-generator.module.js';
-import { SharedModule } from './shared/shared.module.js';
 import { ReportManagementModule } from './report-management/report-management.module.js';
+import { SharedModule } from './shared/shared.module.js';
 
 @Module({
   imports: [
@@ -59,14 +59,13 @@ import { ReportManagementModule } from './report-management/report-management.mo
     EventModule,
 
     ReportGeneratorModule,
+    ReportManagementModule,
 
     ProgressModule,
 
     RulesModule,
 
     RegistryProgressModule,
-
-    ReportManagementModule,
   ],
   providers: [],
 })
