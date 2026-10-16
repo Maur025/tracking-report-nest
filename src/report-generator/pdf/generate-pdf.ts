@@ -35,7 +35,7 @@ export const initializeDocument = ({
 const loadFonts = ({ fonts, document }: LoadFontsParams) => {
   if (fonts.length <= 0) return;
 
-  const fontPath = path.join(cwd(), 'src/report/fonts');
+  const fontPath = path.join(cwd(), 'src/report-generator/fonts');
 
   for (const fontName of fonts) {
     if (!fontName) {

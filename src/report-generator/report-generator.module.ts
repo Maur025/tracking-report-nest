@@ -10,8 +10,9 @@ import { PdfReportService } from './services/pdf-report.service.js';
       provide: PdfReportService,
       useClass: PdfReportServiceImpl,
     },
+
     { provide: ExcelReportService, useClass: ExcelReportServiceImpl },
   ],
   exports: [PdfReportService, ExcelReportService],
 })
-export class ReportModule {}
+export class ReportGeneratorModule {}

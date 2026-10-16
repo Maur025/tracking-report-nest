@@ -2,8 +2,8 @@ import { Temporal } from '@js-temporal/polyfill';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PassThrough } from 'node:stream';
 import { beforeEach, describe, expect, it, Mock, vi } from 'vitest';
-import { ExcelReportService } from '../../report/services/excel-report.service.js';
-import { PdfReportService } from '../../report/services/pdf-report.service.js';
+import { ExcelReportService } from '../../report-generator/services/excel-report.service.js';
+import { PdfReportService } from '../../report-generator/services/pdf-report.service.js';
 import { EnterpriseConfigService } from '../enterprise/enterprise-config.service.js';
 import type { EnterpriseConfig } from '../enterprise/entities/enterprise-config.entity.js';
 import { EventReportQueryParams } from './dto/event-report-query-params.js';
@@ -38,7 +38,10 @@ describe('EventService', () => {
           useValue: { getEventReportDataStream: mockGetEventReportDataStream },
         },
         { provide: PdfReportService, useValue: { generate: mockPdfGenerate } },
-        { provide: ExcelReportService, useValue: { generate: mockExcelGenerate } },
+        {
+          provide: ExcelReportService,
+          useValue: { generate: mockExcelGenerate },
+        },
         {
           provide: EnterpriseConfigService,
           useValue: { findByDatabaseNameThrow: mockFindByDatabaseNameThrow },

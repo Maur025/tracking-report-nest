@@ -7,7 +7,7 @@ vehicular, construido con [NestJS](https://docs.nestjs.com).
 
 El servicio recibe peticiones HTTP de reportes, consulta las bases de datos
 operativas de cada empresa vía HTTP (paginado en streaming) y devuelve el resultado
-como **Excel** o **PDF**. Además se conecta por **WebSocket** a un *gateway/processor*
+como **Excel** o **PDF**. Además se conecta por **WebSocket** a un _gateway/processor_
 central para recibir el catálogo de empresas y sus configuraciones de conexión.
 
 Los datos de rastreo **no viven aquí**: viven en las bases de datos operativas de
@@ -48,19 +48,19 @@ flowchart LR
 
 Toda la documentación del proyecto vive en la carpeta [`docs/`](./docs/README.md):
 
-| Documento | Contenido |
-|---|---|
-| [Índice](./docs/README.md) | Punto de entrada y guía de navegación. |
-| [Estado actual](./docs/01-estado-actual.md) | Qué hace hoy y deuda técnica. |
-| [Tecnologías](./docs/02-tecnologias.md) | Stack, versiones y propósito. |
-| [Instalación y ejecución](./docs/03-instalacion-y-ejecucion.md) | Cómo levantar el proyecto. |
-| [Variables de entorno](./docs/04-variables-de-entorno.md) | Propósito de cada variable. |
-| [Arquitectura](./docs/05-arquitectura.md) | Módulos y flujo de datos. |
-| [API](./docs/06-api.md) | Endpoints y ejemplos. |
-| [Base de datos](./docs/07-base-de-datos.md) | SQLite, entidades y migraciones. |
-| [Testing y calidad](./docs/08-testing-y-calidad.md) | Vitest, oxlint, Prettier y CI. |
-| [Despliegue](./docs/09-despliegue.md) | Build y ejecución en producción. |
-| [Glosario](./docs/10-glosario.md) | Términos del dominio. |
+| Documento                                                       | Contenido                              |
+| --------------------------------------------------------------- | -------------------------------------- |
+| [Índice](./docs/README.md)                                      | Punto de entrada y guía de navegación. |
+| [Estado actual](./docs/01-estado-actual.md)                     | Qué hace hoy y deuda técnica.          |
+| [Tecnologías](./docs/02-tecnologias.md)                         | Stack, versiones y propósito.          |
+| [Instalación y ejecución](./docs/03-instalacion-y-ejecucion.md) | Cómo levantar el proyecto.             |
+| [Variables de entorno](./docs/04-variables-de-entorno.md)       | Propósito de cada variable.            |
+| [Arquitectura](./docs/05-arquitectura.md)                       | Módulos y flujo de datos.              |
+| [API](./docs/06-api.md)                                         | Endpoints y ejemplos.                  |
+| [Base de datos](./docs/07-base-de-datos.md)                     | SQLite, entidades y migraciones.       |
+| [Testing y calidad](./docs/08-testing-y-calidad.md)             | Vitest, oxlint, Prettier y CI.         |
+| [Despliegue](./docs/09-despliegue.md)                           | Build y ejecución en producción.       |
+| [Glosario](./docs/10-glosario.md)                               | Términos del dominio.                  |
 
 ## Inicio rápido
 
