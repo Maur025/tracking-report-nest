@@ -24,11 +24,13 @@ pnpm start:prod      # ejecuta node dist/main
 Antes de arrancar, asegúrate de tener:
 
 1. **Variables de entorno** definidas (ver [04 — Variables de entorno](./04-variables-de-entorno.md)).
-2. **La base de datos migrada:**
+2. **Redis disponible** en `REDIS_HOST:REDIS_PORT`; `QueueModule` inicializa la
+   conexión de BullMQ al arrancar.
+3. **La base de datos migrada:**
    ```bash
    pnpm migration:run
    ```
-3. **Acceso de red** al host/puerto del *gateway/processor*
+4. **Acceso de red** al host/puerto del *gateway/processor*
    (`WS_GATEWAY_HOST_PROCESSOR`, `WS_GATEWAY_PORT_PROCESSOR`).
 
 ## Despliegue administrado (NestJS Mau)
@@ -48,6 +50,7 @@ Este es un servicio *backend* de larga duración que:
 
 - escucha HTTP en `APP_PORT`,
 - abre un WebSocket saliente hacia el *processor*,
+- mantiene una conexión a Redis para la cola `report-queue` (BullMQ),
 - persiste en un archivo SQLite (`DB_URL`).
 
 Consideraciones:
@@ -56,6 +59,7 @@ Consideraciones:
 |---|---|
 | **Persistencia de SQLite** | Monta un volumen persistente para el archivo de `DB_URL` (y sus `-wal`/`-shm`). |
 | **Conectividad al processor** | Habilita salida hacia `WS_GATEWAY_HOST_PROCESSOR:WS_GATEWAY_PORT_PROCESSOR`. |
+| **Redis** | Asegura conectividad a `REDIS_HOST:REDIS_PORT`. Es un requisito de arranque por `QueueModule`. |
 | **`UUID` único** | Cada instancia debe tener un `UUID` distinto ante el *processor*. |
 | **`APP_PORT` accesible** | El *processor* usa `portHttp` (de `APP_PORT`) para llamar al servicio. |
 | **Migraciones** | Ejecútalas como paso de despliegue (`pnpm migration:run`). En producción `migrationsRun` está desactivado (solo se activa con `NODE_ENV=test`). |
@@ -71,6 +75,7 @@ Consideraciones:
 
 - [ ] `pnpm install --frozen-lockfile`
 - [ ] Variables de entorno configuradas en el entorno de destino
+- [ ] Redis accesible (`REDIS_HOST`/`REDIS_PORT`)
 - [ ] `pnpm build`
 - [ ] `pnpm migration:run`
 - [ ] Volumen persistente para SQLite montado

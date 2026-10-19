@@ -72,13 +72,15 @@ pnpm test:e2e      # end-to-end
 
 Las pruebas e2e (`test/*.e2e-spec.ts`) levantan la aplicación completa con
 `createTestApp` y sustituyen la API externa de la empresa por **MSW**, de modo que
-no se necesita ninguna dependencia de red real.
+no se necesita ninguna dependencia de red real. `createTestApp` también mockea
+`QueueModule`, por lo que **no requieren Redis**. La suite e2e solo cubre los
+cuatro reportes; el flujo de `report-management` todavía no tiene e2e.
 
 ### Archivos de soporte (`test/setup/`)
 
 | Archivo | Rol |
 |---|---|
-| `create-test-app.ts` | Crea la app Nest a partir de `AppModule`, aplica CORS, prefijo `api` y `ValidationPipe` (igual que `main.ts`). |
+| `create-test-app.ts` | Crea la app Nest a partir de `AppModule`, reemplaza `IntegrationsModule`, `QueueModule` y `ReportManagementModule` por módulos vacíos (mock), y aplica CORS, prefijo `api` y `ValidationPipe` (igual que `main.ts`). Gracias a esto las pruebas no necesitan WebSocket ni Redis. |
 | `e2e-test-setup.ts` | `setupFiles`: arranca/limpia/cierra el servidor MSW (`beforeAll`/`afterEach`/`afterAll`). |
 | `clean-database.ts` | Vacía `enterprise_configs` y `enterprises` antes de cada test. |
 | `seed-enterprise-config.ts` | Inserta una empresa y su configuración (`host: event-api-test`) para que los reportes resuelvan la conexión. |

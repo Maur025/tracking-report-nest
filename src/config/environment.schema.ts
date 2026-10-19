@@ -20,10 +20,6 @@ export const environmentSchema = object({
 
   UUID: _string().nonempty().default('f0f0f0f0'),
 
-  PING_INTERVAL_MS: envNumberSchema(5000, 2),
-  STORAGE_INTERNAL_HRS: envNumberSchema(1, 1),
-  SAVE_INTERVAL_MIN: envNumberSchema(5, 1),
-
   DB_URL: _string().nonempty().default('./database/tracking-report.sqlite'),
 
   NODE_ENV: _enum(['development', 'test', 'production']).default('development'),
