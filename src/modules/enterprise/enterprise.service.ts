@@ -47,8 +47,6 @@ export class EnterpriseService {
   async findAll(paginationDto: PaginationDto) {
     const { page, size, descending, sortBy } = paginationDto;
 
-    console.log({ descending, sortBy });
-
     const [data, count] = await this.enterpriseRepository.findAndCount({
       take: size,
       skip: page * size,
