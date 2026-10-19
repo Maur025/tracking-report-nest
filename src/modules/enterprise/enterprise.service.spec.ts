@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { beforeEach, describe, expect, it, Mock, vi } from 'vitest';
 import { TransactionContext } from '../../shared/db/transaction/transaction-context.js';
 import { TransactionHandler } from '../../shared/db/transaction/transaction-handler.js';
 import { CreateEnterpriseDto } from './dto/create-enterprise.dto.js';
-import { UpdateEnterpriseDto } from './dto/update-enterprise.dto.js';
 import { EnterpriseService } from './enterprise.service.js';
 import { EnterpriseConfig } from './entities/enterprise-config.entity.js';
 import { Enterprise } from './entities/enterprise.entity.js';
@@ -69,6 +69,10 @@ describe('EnterpriseService', () => {
           useValue: {
             handle: mockHandle,
           },
+        },
+        {
+          provide: getRepositoryToken(Enterprise),
+          useValue: mockEnterpriseRepository,
         },
       ],
     }).compile();
@@ -159,19 +163,6 @@ describe('EnterpriseService', () => {
       await expect(execution).rejects.toThrow(
         'Failed to save enterprise configs',
       );
-    });
-  });
-
-  describe('placeholder operations', () => {
-    // These operations are known debt: they still return example strings.
-    it('should return example strings for the remaining operations', () => {
-      // WHEN / THEN
-      expect(service.findAll()).toBe('This action returns all enterprise');
-      expect(service.findOne(1)).toBe('This action returns a #1 enterprise');
-      expect(service.update(1, {} as UpdateEnterpriseDto)).toBe(
-        'This action updates a #1 enterprise',
-      );
-      expect(service.remove(1)).toBe('This action removes a #1 enterprise');
     });
   });
 });
