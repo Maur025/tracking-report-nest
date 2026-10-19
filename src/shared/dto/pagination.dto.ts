@@ -11,11 +11,13 @@ export class PaginationDto {
   @IsOptional()
   descending: boolean = false;
 
+  @Transform(({ value }) => Number(value))
   @IsInt()
   @Min(0)
   @IsOptional()
   page: number = 0;
 
+  @Transform(({ value }) => Number(value))
   @IsInt()
   @Min(1)
   @IsOptional()

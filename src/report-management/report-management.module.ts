@@ -5,8 +5,8 @@ import { ReportRequest } from './entities/report-request.entity.js';
 import { REPORT_QUEUE_NAME } from './queue/queue-values.js';
 import { ReportConsumer } from './queue/report-consumer.js';
 import { ReportProducer } from './queue/report-producer.js';
-import { ReportManagementController } from './report-management.controller.js';
 import { ReportManagementService } from './report-management.service.js';
+import { ReportController } from './report.controller.js';
 
 @Module({
   imports: [
@@ -16,7 +16,7 @@ import { ReportManagementService } from './report-management.service.js';
       name: REPORT_QUEUE_NAME,
     }),
   ],
-  controllers: [ReportManagementController],
+  controllers: [ReportController],
   providers: [ReportManagementService, ReportProducer, ReportConsumer],
   exports: [ReportProducer],
 })

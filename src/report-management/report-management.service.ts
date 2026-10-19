@@ -1,26 +1,28 @@
 import { Injectable } from '@nestjs/common';
-import { CreateReportManagementDto } from './dto/create-report-management.dto.js';
-import { UpdateReportManagementDto } from './dto/update-report-management.dto.js';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { PaginationDto } from '../shared/dto/pagination.dto.js';
+import { pageResponse } from '../shared/utils/page-response.js';
+import { ReportRequest } from './entities/report-request.entity.js';
 
 @Injectable()
 export class ReportManagementService {
-  create(createReportManagementDto: CreateReportManagementDto) {
-    return 'This action adds a new reportManagement';
-  }
+  constructor(
+    @InjectRepository(ReportRequest)
+    private readonly reportRequestRepository: Repository<ReportRequest>,
+  ) {}
 
-  findAll() {
-    return `This action returns all reportManagement`;
-  }
+  async findAll(paginationDto: PaginationDto) {
+    const { page, size, descending, sortBy } = paginationDto;
 
-  findOne(id: number) {
-    return `This action returns a #${id} reportManagement`;
-  }
+    const [data, count] = await this.reportRequestRepository.findAndCount({
+      take: size,
+      skip: page * size,
+      order: {
+        [sortBy]: { direction: descending ? 'DESC' : 'ASC', nulls: 'LAST' },
+      },
+    });
 
-  update(id: number, updateReportManagementDto: UpdateReportManagementDto) {
-    return `This action updates a #${id} reportManagement`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} reportManagement`;
+    return pageResponse({ data, count, size });
   }
 }
