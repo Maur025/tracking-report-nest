@@ -1,12 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { beforeEach, describe, expect, it, Mock, vi } from 'vitest';
-import { PaginationDto } from '../shared/dto/pagination.dto.js';
-import { ReportRequest } from './entities/report-request.entity.js';
-import { ReportManagementService } from './report-management.service.js';
+import { PaginationDto } from '../../shared/dto/pagination.dto.js';
+import { ReportRequest } from '../entities/report-request.entity.js';
+import { ReportRequestService } from './report-request.service.js';
 
-describe('ReportManagementService', () => {
-  let service: ReportManagementService;
+describe('ReportRequestService', () => {
+  let service: ReportRequestService;
   let mockFindAndCount: Mock;
 
   const reportRequests = [
@@ -19,7 +19,7 @@ describe('ReportManagementService', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        ReportManagementService,
+        ReportRequestService,
         {
           provide: getRepositoryToken(ReportRequest),
           useValue: { findAndCount: mockFindAndCount },
@@ -27,7 +27,7 @@ describe('ReportManagementService', () => {
       ],
     }).compile();
 
-    service = module.get<ReportManagementService>(ReportManagementService);
+    service = module.get<ReportRequestService>(ReportRequestService);
   });
 
   it('should be defined', () => {

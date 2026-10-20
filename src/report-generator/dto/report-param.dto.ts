@@ -22,7 +22,7 @@ export class ReportParamDto extends PaginationDto {
   @IsOptional()
   filterByLabel?: string;
 
-  @IsIn(['json', 'excel', 'pdf'])
+  @IsIn(['excel', 'pdf'])
   @IsOptional()
-  format: 'json' | 'excel' | 'pdf' = 'json';
+  format: 'excel' | 'pdf' = 'pdf';
 }

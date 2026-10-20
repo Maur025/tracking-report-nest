@@ -1,0 +1,19 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { QueueService } from './queue.service.js';
+
+describe('QueueService', () => {
+  let service: QueueService;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [QueueService],
+    }).compile();
+
+    service = module.get<QueueService>(QueueService);
+  });
+
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+});

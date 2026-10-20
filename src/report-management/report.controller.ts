@@ -1,20 +1,18 @@
-import { Controller, Get, Post, Query } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { PaginationDto } from '../shared/dto/pagination.dto.js';
-import { ReportManagementService } from './report-management.service.js';
+import { ReportRequestService } from './services/report-request.service.js';
 
 @Controller('reports/queue')
 export class ReportController {
-  constructor(
-    private readonly reportManagementService: ReportManagementService,
-  ) {}
+  constructor(private readonly reportRequestService: ReportRequestService) {}
 
-  @Post()
-  create() {
-    return 'Added to queue';
-  }
+  // @Post()
+  // create(@Body() request: any, @Query('resource') resource: string) {
+  //   return 'Added to queue';
+  // }
 
   @Get()
   async findAll(@Query() paginationDto: PaginationDto) {
-    return this.reportManagementService.findAll(paginationDto);
+    return this.reportRequestService.findAll(paginationDto);
   }
 }

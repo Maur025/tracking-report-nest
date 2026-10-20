@@ -1,16 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { PaginationDto } from '../shared/dto/pagination.dto.js';
-import { pageResponse } from '../shared/utils/page-response.js';
-import { ReportRequest } from './entities/report-request.entity.js';
+import { PaginationDto } from '../../shared/dto/pagination.dto.js';
+import { pageResponse } from '../../shared/utils/page-response.js';
+import { CreateReportRequestDto } from '../dto/create-report-request.dto.js';
+import { ReportRequest } from '../entities/report-request.entity.js';
 
 @Injectable()
-export class ReportManagementService {
+export class ReportRequestService {
   constructor(
     @InjectRepository(ReportRequest)
     private readonly reportRequestRepository: Repository<ReportRequest>,
   ) {}
+
+  async create(createReportRequestDto: CreateReportRequestDto) {
+    const reportRequest = this.reportRequestRepository.create(
+      createReportRequestDto,
+    );
+
+    return this.reportRequestRepository.save(reportRequest);
+  }
 
   async findAll(paginationDto: PaginationDto) {
     const { page, size, descending, sortBy } = paginationDto;

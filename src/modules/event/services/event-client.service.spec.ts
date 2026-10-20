@@ -1,9 +1,9 @@
 import { HttpClient } from '@nestjs/http-client';
 import { Test, TestingModule } from '@nestjs/testing';
 import { beforeEach, describe, expect, it, Mock, vi } from 'vitest';
+import { Pagination } from '../interfaces/event-client-response.interface.js';
+import { EventReportResponse } from '../interfaces/event-report-response.interface.js';
 import { EventClientService } from './event-client.service.js';
-import { Pagination } from './interfaces/event-client-response.interface.js';
-import { EventReportResponse } from './interfaces/event-report-response.interface.js';
 
 describe('EventClientService', () => {
   let service: EventClientService;

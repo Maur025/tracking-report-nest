@@ -1,15 +1,15 @@
 import { BadGatewayException, Injectable, Logger } from '@nestjs/common';
 import { HttpClient } from '@nestjs/http-client';
-import { streamPaginatedData } from '../../shared/utils/stream-paginated-data.js';
-import { transformSafeString } from '../../shared/utils/transform-safe-string.js';
-import type { EventClientResponseDto } from './interfaces/event-client-response.interface.js';
+import { streamPaginatedData } from '../../../shared/utils/stream-paginated-data.js';
+import { transformSafeString } from '../../../shared/utils/transform-safe-string.js';
+import type { EventClientResponseDto } from '../interfaces/event-client-response.interface.js';
 import type {
   GetEventReportDataParams,
   GetEventReportDataResponse,
   GetEventReportDataStreamParams,
-} from './interfaces/event-client-service.interface.js';
-import type { EventReportResponse } from './interfaces/event-report-response.interface.js';
-import { eventReportResponseMapper } from './mapper/event-report-response.mapper.js';
+} from '../interfaces/event-client-service.interface.js';
+import type { EventReportResponse } from '../interfaces/event-report-response.interface.js';
+import { eventReportResponseMapper } from '../mapper/event-report-response.mapper.js';
 
 @Injectable()
 export class EventClientService {

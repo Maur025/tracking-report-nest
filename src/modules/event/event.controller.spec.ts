@@ -4,7 +4,7 @@ import { PassThrough } from 'node:stream';
 import { beforeEach, describe, expect, it, Mock, vi } from 'vitest';
 import { EventReportQueryParams } from './dto/event-report-query-params.js';
 import { EventController } from './event.controller.js';
-import { EventService } from './event.service.js';
+import { EventService } from './services/event.service.js';
 
 describe('EventController', () => {
   let controller: EventController;
@@ -32,7 +32,10 @@ describe('EventController', () => {
 
   it('should delegate the report generation to the service', async () => {
     // GIVEN
-    const params = { databaseName: 'db', format: 'excel' } as EventReportQueryParams;
+    const params = {
+      databaseName: 'db',
+      format: 'excel',
+    } as EventReportQueryParams;
 
     // WHEN
     await controller.generateReportStream(params);
