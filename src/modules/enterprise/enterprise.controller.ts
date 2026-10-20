@@ -4,11 +4,11 @@ import {
   Delete,
   Get,
   Param,
-  Patch,
   Post,
+  Query,
 } from '@nestjs/common';
+import { PaginationDto } from '../../shared/dto/pagination.dto.js';
 import { CreateEnterpriseDto } from './dto/create-enterprise.dto.js';
-import { UpdateEnterpriseDto } from './dto/update-enterprise.dto.js';
 import { EnterpriseService } from './enterprise.service.js';
 
 @Controller('enterprises')
@@ -21,25 +21,17 @@ export class EnterpriseController {
   }
 
   @Get()
-  findAll() {
-    return this.enterpriseService.findAll();
+  async findAll(@Query() paginationDto: PaginationDto) {
+    return this.enterpriseService.findAll(paginationDto);
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.enterpriseService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateEnterpriseDto: UpdateEnterpriseDto,
-  ) {
-    return this.enterpriseService.update(+id, updateEnterpriseDto);
+    return this.enterpriseService.findOne(id);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.enterpriseService.remove(+id);
+    return this.enterpriseService.remove(id);
   }
 }

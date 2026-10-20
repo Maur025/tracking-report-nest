@@ -20,6 +20,11 @@ Base URL de ejemplo: `http://localhost:10801/api`
 | `GET` | `/api/enterprises/:id` | Obtener empresa. *(stub)* |
 | `PATCH` | `/api/enterprises/:id` | Actualizar empresa. *(stub)* |
 | `DELETE` | `/api/enterprises/:id` | Eliminar empresa. *(stub)* |
+| `POST` | `/api/report-management` | Crear una solicitud de reporte. *(stub)* |
+| `GET` | `/api/report-management` | Listar solicitudes de reporte. *(stub)* |
+| `GET` | `/api/report-management/:id` | Obtener una solicitud de reporte. *(stub)* |
+| `PATCH` | `/api/report-management/:id` | Actualizar una solicitud de reporte. *(stub)* |
+| `DELETE` | `/api/report-management/:id` | Eliminar una solicitud de reporte. *(stub)* |
 
 > La validación global usa `whitelist` + `forbidNonWhitelisted`: **enviar un
 > parámetro no declarado produce un error `400`**.
@@ -197,6 +202,28 @@ curl -X POST http://localhost:10801/api/enterprises \
 
 Actualmente **no operan sobre la base de datos** (devuelven texto de ejemplo). Ver
 [01 — Estado actual](./01-estado-actual.md).
+
+---
+
+## Endpoints de gestión de reportes
+
+`ReportManagementController` (`src/report-management/`) expone un CRUD bajo
+`/api/report-management`. **Hoy todos los métodos son stubs**: delegan en
+`ReportManagementService`, que devuelve textos de ejemplo, y no consultan la base
+de datos ni encolan trabajos.
+
+Aun así, el módulo ya registra la infraestructura de cola:
+
+- `ReportProducer` puede agregar jobs `generate-pdf` / `generate-excel` a la cola
+  `report-queue` con `jobId` `pdf-<reportId>` / `excel-<reportId>`.
+- `ReportConsumer` reconoce esos jobs y, actualmente, retorna sin generar el
+  documento.
+- `ReportRequest` (`report_requests`) modela el estado
+  (`PENDING`, `PROCESSING`, `COMPLETED`, `FAILED`), `type`, `payload`,
+  `file_path` y `error_message`.
+
+Ver el flujo detallado en
+[05 — Arquitectura](./05-arquitectura.md#gestión-de-reportes-y-cola).
 
 ---
 

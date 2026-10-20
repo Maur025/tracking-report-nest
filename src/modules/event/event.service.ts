@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PassThrough } from 'node:stream';
-import { ExcelReportService } from '../../report/services/excel-report.service.js';
-import { PdfReportService } from '../../report/services/pdf-report.service.js';
+import { ExcelReportService } from '../../report-generator/services/excel-report.service.js';
+import { PdfReportService } from '../../report-generator/services/pdf-report.service.js';
 import { formatDateOfTimestamp } from '../../shared/utils/format-date-of-timestamp.js';
 import { getDateFilter } from '../../shared/utils/get-date-filter.js';
 import { EnterpriseConfigService } from '../enterprise/enterprise-config.service.js';

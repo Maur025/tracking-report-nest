@@ -1,12 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { TransactionHandler } from '../../shared/db/transaction/transaction-handler.js';
+import { PaginationDto } from '../../shared/dto/pagination.dto.js';
+import { pageResponse } from '../../shared/utils/page-response.js';
 import { CreateEnterpriseDto } from './dto/create-enterprise.dto.js';
-import { UpdateEnterpriseDto } from './dto/update-enterprise.dto.js';
-import { type Enterprise } from './entities/enterprise.entity.js';
+import { Enterprise } from './entities/enterprise.entity.js';
 
 @Injectable()
 export class EnterpriseService {
-  constructor(private readonly transactionalHandler: TransactionHandler) {}
+  constructor(
+    private readonly transactionalHandler: TransactionHandler,
+    @InjectRepository(Enterprise)
+    private readonly enterpriseRepository: Repository<Enterprise>,
+  ) {}
 
   async create(createEnterpriseDto: CreateEnterpriseDto) {
     const { enterpriseConfigs, ...createDto } = createEnterpriseDto;
@@ -37,20 +44,33 @@ export class EnterpriseService {
     return enterprise.id;
   }
 
-  findAll() {
-    return `This action returns all enterprise`;
+  async findAll(paginationDto: PaginationDto) {
+    const { page, size, descending, sortBy } = paginationDto;
+
+    const [data, count] = await this.enterpriseRepository.findAndCount({
+      take: size,
+      skip: page * size,
+      order: {
+        [sortBy]: { direction: descending ? 'DESC' : 'ASC', nulls: 'LAST' },
+      },
+    });
+
+    return pageResponse({ data, count, size });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} enterprise`;
+  async findOne(id: string) {
+    const enterprise = await this.enterpriseRepository.findOneBy({ id });
+
+    if (!enterprise) {
+      throw new NotFoundException(`Enterprise with id ${id} not found`);
+    }
+
+    return enterprise;
   }
 
-  // oxlint-disable-next-line no-unused-vars
-  update(id: number, updateEnterpriseDto: UpdateEnterpriseDto) {
-    return `This action updates a #${id} enterprise`;
-  }
+  async remove(id: string) {
+    const enterprise = await this.findOne(id);
 
-  remove(id: number) {
-    return `This action removes a #${id} enterprise`;
+    await this.enterpriseRepository.remove(enterprise);
   }
 }
