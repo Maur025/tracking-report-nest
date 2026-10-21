@@ -14,6 +14,7 @@ import { RulesModule } from './modules/rules/rules.module.js';
 import { ReportGeneratorModule } from './report-generator/report-generator.module.js';
 import { ReportManagementModule } from './report-management/report-management.module.js';
 import { SharedModule } from './shared/shared.module.js';
+import { ReportProcessingModule } from './report-processing/report-processing.module.js';
 
 @Module({
   imports: [
@@ -66,6 +67,8 @@ import { SharedModule } from './shared/shared.module.js';
     RulesModule,
 
     RegistryProgressModule,
+
+    ReportProcessingModule,
   ],
   providers: [],
 })

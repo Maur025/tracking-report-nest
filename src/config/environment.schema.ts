@@ -14,6 +14,7 @@ export const environmentSchema = object({
 
   WS_PORT: envPortSchema(10701),
   APP_PORT: envPortSchema(10801),
+  APP_STATIC_PATH: _string().nonempty().default('./public'),
 
   WS_GATEWAY_HOST_PROCESSOR: _string().nonempty().default('localhost'),
   WS_GATEWAY_PORT_PROCESSOR: envPortSchema(7170),

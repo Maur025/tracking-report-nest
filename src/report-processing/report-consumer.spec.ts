@@ -1,8 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Job } from 'bullmq';
 import { beforeEach, describe, expect, it } from 'vitest';
+import {
+  GenerateReportJob,
+  REPORT_JOBS,
+} from '../infrastructure/queue/queue-values.js';
 import { ReportConsumer } from './report-consumer.js';
-import { GenerateReportJob, REPORT_JOBS } from './queue-values.js';
 
 describe('ReportConsumer', () => {
   let service: ReportConsumer;

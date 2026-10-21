@@ -1,9 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PaginationDto } from '../../shared/dto/pagination.dto.js';
 import { pageResponse } from '../../shared/utils/page-response.js';
 import { CreateReportRequestDto } from '../dto/create-report-request.dto.js';
+import { UpdateReportRequestDto } from '../dto/update-report-request.dto.js';
 import { ReportRequest } from '../entities/report-request.entity.js';
 
 @Injectable()
@@ -33,5 +38,35 @@ export class ReportRequestService {
     });
 
     return pageResponse({ data, count, size });
+  }
+
+  async findOneByIdThrow(id: string) {
+    const reportRequest = await this.reportRequestRepository.findOneBy({ id });
+
+    if (!reportRequest) {
+      throw new NotFoundException(`Report request with id ${id} not found`);
+    }
+
+    return reportRequest;
+  }
+
+  async update(id: string, updateReportRequestDto: UpdateReportRequestDto) {
+    const reportRequest = await this.reportRequestRepository.preload({
+      id,
+      ...updateReportRequestDto,
+    });
+
+    if (!reportRequest) {
+      throw new NotFoundException(`Report request with id ${id} not found`);
+    }
+
+    try {
+      await this.reportRequestRepository.save(reportRequest);
+      return reportRequest;
+    } catch (error) {
+      throw new BadRequestException(
+        `Failed to update report request with id ${id}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+    }
   }
 }

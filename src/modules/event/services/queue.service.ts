@@ -25,8 +25,6 @@ export class QueueService {
       payload: request,
     });
 
-    console.log({ reportRequest });
-
     if (format === 'pdf') {
       await this.reportProducer.generatePdf({ reportId: reportRequest.id });
 

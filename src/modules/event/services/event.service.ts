@@ -69,10 +69,12 @@ export class EventService {
         ],
         rows: (item, index) => {
           const { eventName, eventDetail } = getEventValues(item);
-          const formattedDate = formatDateOfTimestamp({
-            timestamp: item.date,
-            zoneId,
-          });
+          const formattedDate = !item.date
+            ? 'N/A'
+            : formatDateOfTimestamp({
+                timestamp: item.date,
+                zoneId,
+              });
 
           return [
             { value: index },
@@ -114,10 +116,12 @@ export class EventService {
         ],
         columnRows: (item, index) => {
           const { eventName, eventDetail } = getEventValues(item);
-          const formattedDate = formatDateOfTimestamp({
-            timestamp: item.date,
-            zoneId,
-          });
+          const formattedDate = !item.date
+            ? 'N/A'
+            : formatDateOfTimestamp({
+                timestamp: item.date,
+                zoneId,
+              });
 
           return [
             { text: String(index), fontSize: 8, paddingX: 4 },
