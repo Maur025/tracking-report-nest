@@ -24,7 +24,7 @@ describe('/api/registry-progress/reports test', () => {
   });
 
   afterAll(async () => {
-    await app.close();
+    await app?.close();
   });
 
   it("should return 400 when required query parameters aren't provided /(GET)", async () => {
