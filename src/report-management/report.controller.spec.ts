@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { beforeEach, describe, expect, it, Mock, vi } from 'vitest';
 import { PaginationDto } from '../shared/dto/pagination.dto.js';
 import { ReportController } from './report.controller.js';
-import { ReportManagementService } from './services/report-management.service.js';
+import { ReportRequestService } from './services/report-request.service.js';
 
 describe('ReportManagementController', () => {
   let controller: ReportController;
@@ -15,7 +15,7 @@ describe('ReportManagementController', () => {
       controllers: [ReportController],
       providers: [
         {
-          provide: ReportManagementService,
+          provide: ReportRequestService,
           useValue: { findAll: mockFindAll },
         },
       ],

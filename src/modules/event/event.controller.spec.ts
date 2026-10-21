@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, Mock, vi } from 'vitest';
 import { EventReportQueryParams } from './dto/event-report-query-params.js';
 import { EventController } from './event.controller.js';
 import { EventService } from './services/event.service.js';
+import { QueueService } from './services/queue.service.js';
 
 describe('EventController', () => {
   let controller: EventController;
@@ -20,6 +21,7 @@ describe('EventController', () => {
           provide: EventService,
           useValue: { generateReportStream: mockGenerateReportStream },
         },
+        { provide: QueueService, useValue: {} },
       ],
     }).compile();
 
