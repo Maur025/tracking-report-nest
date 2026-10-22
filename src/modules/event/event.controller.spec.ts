@@ -10,9 +10,13 @@ import { QueueService } from './services/queue.service.js';
 describe('EventController', () => {
   let controller: EventController;
   let mockGenerateReportStream: Mock;
+  let mockAddReportToQueue: Mock;
 
   beforeEach(async () => {
     mockGenerateReportStream = vi.fn().mockResolvedValue(new PassThrough());
+    mockAddReportToQueue = vi
+      .fn()
+      .mockResolvedValue({ reportRequestId: 'report-123' });
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [EventController],
@@ -21,7 +25,10 @@ describe('EventController', () => {
           provide: EventService,
           useValue: { generateReportStream: mockGenerateReportStream },
         },
-        { provide: QueueService, useValue: {} },
+        {
+          provide: QueueService,
+          useValue: { addReportToQueue: mockAddReportToQueue },
+        },
       ],
     }).compile();
 
@@ -79,5 +86,34 @@ describe('EventController', () => {
     expect(response.getHeaders().disposition).toBe(
       'attachment; filename=events.xlsx',
     );
+  });
+
+  describe('addReportToQueue', () => {
+    it('should delegate the enqueue to the queue service', async () => {
+      // GIVEN
+      const request = {
+        databaseName: 'db',
+        format: 'pdf',
+      } as EventReportQueryParams;
+
+      // WHEN
+      const result = await controller.addReportToQueue(request);
+
+      // THEN
+      expect(mockAddReportToQueue).toHaveBeenCalledWith(request);
+      expect(result).toEqual({ reportRequestId: 'report-123' });
+    });
+
+    it('should propagate the error raised by the queue service', async () => {
+      // GIVEN
+      mockAddReportToQueue.mockRejectedValue(new Error('Enterprise not found'));
+
+      // WHEN / THEN
+      await expect(
+        controller.addReportToQueue({
+          databaseName: 'db',
+        } as EventReportQueryParams),
+      ).rejects.toThrow('Enterprise not found');
+    });
   });
 });

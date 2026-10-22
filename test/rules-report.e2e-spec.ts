@@ -57,6 +57,106 @@ describe('/api/rules/reports test', () => {
     expect(response.status).toBe(500);
   });
 
+  it('should return 400 when an unknown query parameter is provided /(GET)', async () => {
+    // WHEN
+    const response = await request(app.getHttpServer())
+      .get(RESOURCE_URL)
+      .query({
+        databaseName: 'enterprise_1_db',
+        unknownParam: 'value',
+      });
+
+    // THEN
+    expect(response.status).toBe(400);
+    expect(response.body.message).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining('unknownParam should not exist'),
+      ]),
+    );
+  });
+
+  it('should return 400 when the format is not supported /(GET)', async () => {
+    // WHEN
+    const response = await request(app.getHttpServer())
+      .get(RESOURCE_URL)
+      .query({
+        databaseName: 'enterprise_1_db',
+        format: 'csv',
+      });
+
+    // THEN
+    expect(response.status).toBe(400);
+  });
+
+  it('should return 400 when the disposition is not supported /(GET)', async () => {
+    // WHEN
+    const response = await request(app.getHttpServer())
+      .get(RESOURCE_URL)
+      .query({
+        databaseName: 'enterprise_1_db',
+        disposition: 'unknown',
+      });
+
+    // THEN
+    expect(response.status).toBe(400);
+  });
+
+  it('should return 200 and a pdf file when the format is not provided /(GET)', async () => {
+    // WHEN
+    const response = await request(app.getHttpServer())
+      .get(RESOURCE_URL)
+      .query({
+        databaseName: 'enterprise_1_db',
+        zoneId: 'America/La_Paz',
+      })
+      .buffer(true)
+      .parse(binaryParser);
+
+    // THEN
+    expect(response.status).toBe(200);
+    expect(response.headers['content-type']).toContain('application/pdf');
+    expect(response.body.subarray(0, 4).toString()).toBe('%PDF');
+  });
+
+  it('should return 200 and set the inline disposition /(GET)', async () => {
+    // WHEN
+    const response = await request(app.getHttpServer())
+      .get(RESOURCE_URL)
+      .query({
+        databaseName: 'enterprise_1_db',
+        fileName: 'rules_report',
+        disposition: 'inline',
+        format: 'pdf',
+      })
+      .buffer(true)
+      .parse(binaryParser);
+
+    // THEN
+    expect(response.status).toBe(200);
+    expect(response.headers['content-disposition']).toContain('inline');
+    expect(response.headers['content-disposition']).toContain('rules_report');
+    expect(response.body.subarray(0, 4).toString()).toBe('%PDF');
+  });
+
+  it('should always attach the xlsx file when the format is excel /(GET)', async () => {
+    // WHEN
+    const response = await request(app.getHttpServer())
+      .get(RESOURCE_URL)
+      .query({
+        databaseName: 'enterprise_1_db',
+        fileName: 'rules_report',
+        disposition: 'inline',
+        format: 'excel',
+      })
+      .buffer(true)
+      .parse(binaryParser);
+
+    // THEN
+    expect(response.status).toBe(200);
+    expect(response.headers['content-disposition']).toContain('attachment');
+    expect(response.body.subarray(0, 4).toString()).toBe('PK\x03\x04');
+  });
+
   it('should return 200 and return a pdf file /(GET)', async () => {
     // GIVEN
     const disposition = 'attachment';

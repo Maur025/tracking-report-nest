@@ -51,4 +51,58 @@ describe('PaginationDto', () => {
     expect(properties).toContain('page');
     expect(properties).toContain('size');
   });
+
+  it('should keep a boolean descending flag untouched', () => {
+    // WHEN
+    const dto = plainToInstance(PaginationDto, { descending: true });
+
+    // THEN
+    expect(dto.descending).toBe(true);
+  });
+
+  it('should transform a false descending flag from a query string', () => {
+    // WHEN
+    const dto = plainToInstance(PaginationDto, { descending: 'false' });
+
+    // THEN
+    expect(dto.descending).toBe(false);
+  });
+
+  it('should transform the page and the size from a query string', () => {
+    // WHEN
+    const dto = plainToInstance(PaginationDto, {
+      page: '3',
+      size: '50',
+    });
+
+    // THEN
+    expect(dto.page).toBe(3);
+    expect(dto.size).toBe(50);
+  });
+
+  it('should reject a page that is not a number', async () => {
+    // GIVEN
+    const dto = plainToInstance(PaginationDto, { page: 'abc' });
+
+    // WHEN
+    const errors = await validate(dto);
+
+    // THEN
+    expect(errors).toHaveLength(1);
+    expect(errors[0].property).toBe('page');
+    expect(errors[0].constraints).toHaveProperty('isInt');
+  });
+
+  it('should reject a size that is not a number', async () => {
+    // GIVEN
+    const dto = plainToInstance(PaginationDto, { size: 'abc' });
+
+    // WHEN
+    const errors = await validate(dto);
+
+    // THEN
+    expect(errors).toHaveLength(1);
+    expect(errors[0].property).toBe('size');
+    expect(errors[0].constraints).toHaveProperty('isInt');
+  });
 });
