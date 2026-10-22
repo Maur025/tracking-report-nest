@@ -83,4 +83,24 @@ describe('GatewayClientHandlerService', () => {
     );
     expect(mockSaveEnterprisesWithConfigurations).not.toHaveBeenCalled();
   });
+
+  it('should persist the enterprises received through the enterprises event', async () => {
+    // GIVEN
+    service.setupGatewayClient();
+
+    const onMock = service.getGatewayClient().wsClientManager.on as Mock;
+    const handler = onMock.mock.calls[0][1] as (
+      socket: unknown,
+      uuid: string,
+      payload: unknown[],
+    ) => Promise<void>;
+
+    const payload = [{ id: 'enterprise-id-1' }];
+
+    // WHEN
+    await handler({}, 'uuid-1', payload);
+
+    // THEN
+    expect(mockSaveEnterprisesWithConfigurations).toHaveBeenCalledWith(payload);
+  });
 });

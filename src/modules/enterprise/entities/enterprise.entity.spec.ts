@@ -18,6 +18,17 @@ describe('Enterprise', () => {
     expect(enterprise.color).toBe('#FF5733');
   });
 
+  it('should keep the image of the enterprise', () => {
+    // GIVEN
+    const enterprise = new Enterprise();
+
+    // WHEN
+    enterprise.image = 'data:image/png;base64,logo';
+
+    // THEN
+    expect(enterprise.image).toBe('data:image/png;base64,logo');
+  });
+
   it('should relate to its configurations', () => {
     // GIVEN
     const enterprise = new Enterprise();
@@ -28,5 +39,13 @@ describe('Enterprise', () => {
 
     // THEN
     expect(enterprise.enterpriseConfigs).toEqual([config]);
+  });
+
+  it('should start without configurations', () => {
+    // GIVEN
+    const enterprise = new Enterprise();
+
+    // THEN
+    expect(enterprise.enterpriseConfigs).toBeUndefined();
   });
 });

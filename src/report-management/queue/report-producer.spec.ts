@@ -5,7 +5,7 @@ import {
   GenerateReportJob,
   REPORT_JOBS,
   REPORT_QUEUE_NAME,
-} from './queue-values.js';
+} from '../../infrastructure/queue/queue-values.js';
 import { ReportProducer } from './report-producer.js';
 
 describe('ReportProducer', () => {
@@ -41,11 +41,9 @@ describe('ReportProducer', () => {
 
       // THEN
       expect(mockQueueAdd).toHaveBeenCalledTimes(1);
-      expect(mockQueueAdd).toHaveBeenCalledWith(
-        REPORT_JOBS.GENERATE_PDF,
-        job,
-        { jobId: 'pdf-report-123' },
-      );
+      expect(mockQueueAdd).toHaveBeenCalledWith(REPORT_JOBS.GENERATE_PDF, job, {
+        jobId: 'pdf-report-123',
+      });
       expect(result).toEqual({ id: 'enqueued-job' });
     });
 

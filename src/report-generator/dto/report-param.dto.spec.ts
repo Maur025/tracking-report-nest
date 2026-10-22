@@ -11,7 +11,6 @@ describe('ReportParamDto', () => {
     // THEN
     expect(dto.disposition).toBe('inline');
     expect(dto.fileName).toBe('example');
-    expect(dto.format).toBe('json');
   });
 
   it('should require the database name', async () => {

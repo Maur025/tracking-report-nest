@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { PassThrough } from 'node:stream';
-import { ExcelReportService } from '../../report-generator/services/excel-report.service.js';
-import { PdfReportService } from '../../report-generator/services/pdf-report.service.js';
-import { formatDateOfTimestamp } from '../../shared/utils/format-date-of-timestamp.js';
-import { getDateFilter } from '../../shared/utils/get-date-filter.js';
-import { EnterpriseConfigService } from '../enterprise/enterprise-config.service.js';
-import type { EnterpriseConfig } from '../enterprise/entities/enterprise-config.entity.js';
-import { getEventValues } from './common/event-report-common.js';
-import { EventReportQueryParams } from './dto/event-report-query-params.js';
+import { ExcelReportService } from '../../../report-generator/services/excel-report.service.js';
+import { PdfReportService } from '../../../report-generator/services/pdf-report.service.js';
+import { formatDateOfTimestamp } from '../../../shared/utils/format-date-of-timestamp.js';
+import { getDateFilter } from '../../../shared/utils/get-date-filter.js';
+import { EnterpriseConfigService } from '../../enterprise/enterprise-config.service.js';
+import type { EnterpriseConfig } from '../../enterprise/entities/enterprise-config.entity.js';
+import { getEventValues } from '../common/event-report-common.js';
+import { EventReportQueryParams } from '../dto/event-report-query-params.js';
+import { EventReportResponse } from '../interfaces/event-report-response.interface.js';
 import { EventClientService } from './event-client.service.js';
-import { EventReportResponse } from './interfaces/event-report-response.interface.js';
 
 @Injectable()
 export class EventService {
@@ -69,10 +69,12 @@ export class EventService {
         ],
         rows: (item, index) => {
           const { eventName, eventDetail } = getEventValues(item);
-          const formattedDate = formatDateOfTimestamp({
-            timestamp: item.date,
-            zoneId,
-          });
+          const formattedDate = !item.date
+            ? 'N/A'
+            : formatDateOfTimestamp({
+                timestamp: item.date,
+                zoneId,
+              });
 
           return [
             { value: index },
@@ -114,10 +116,12 @@ export class EventService {
         ],
         columnRows: (item, index) => {
           const { eventName, eventDetail } = getEventValues(item);
-          const formattedDate = formatDateOfTimestamp({
-            timestamp: item.date,
-            zoneId,
-          });
+          const formattedDate = !item.date
+            ? 'N/A'
+            : formatDateOfTimestamp({
+                timestamp: item.date,
+                zoneId,
+              });
 
           return [
             { text: String(index), fontSize: 8, paddingX: 4 },

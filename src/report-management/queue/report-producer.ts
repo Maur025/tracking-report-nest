@@ -5,7 +5,7 @@ import {
   GenerateReportJob,
   REPORT_JOBS,
   REPORT_QUEUE_NAME,
-} from './queue-values.js';
+} from '../../infrastructure/queue/queue-values.js';
 
 @Injectable()
 export class ReportProducer {

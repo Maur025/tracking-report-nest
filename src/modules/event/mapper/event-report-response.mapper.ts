@@ -7,15 +7,15 @@ import {
 
 export const eventReportResponseMapper = (data: EventClientContent[] = []) =>
   data?.map((item): EventReportResponse => ({
-    vehicles: item.vehicle.map((ve) => ve.name).join(', '),
+    vehicles: item.vehicle?.map((ve) => ve.name).join(', '),
     vehicleOtherData: stringToObject<EventReportVehicleOtherData>(
       item.vehicle[0]?.metadata,
     ),
-    geofence: item.geofence.name,
+    geofence: item.geofence?.name,
     rule: item.rule?.name,
     ruleDescription: item.rule?.description,
-    deviceImei: String(item.device.imei),
-    deviceType: item.device.gpsspec_id,
+    deviceImei: String(item.device?.imei),
+    deviceType: item.device?.gpsspec_id,
     devicePosition: [item.lon, item.lat],
     date: item.date,
     eventName: item.type_name,

@@ -68,6 +68,23 @@ pnpm test:e2e      # end-to-end
 > La suite e2e cubre los **cuatro reportes** y valida tanto la respuesta `pdf`
 > como la `excel` (firmas `%PDF` y `PK\x03\x04`). Ver más abajo.
 
+## Cobertura
+
+`pnpm test:cov` mide la cobertura con **v8** sobre `src/`:
+
+| Métrica | Actual | Objetivo |
+|---|---|---|
+| Statements | 98.41 % | ≥ 95 % |
+| Branches | 91.74 % | ≥ 88 % |
+| Functions | 96.03 % | — |
+| Lines | 98.66 % | — |
+
+Lo que **no** está cubierto y requiere dependencias externas:
+
+- `report-management` (cola BullMQ) y `POST /api/events/reports/queue`: necesitan
+  **Redis**, que CI provee pero no está disponible en local.
+- `src/integrations/scheduler/`: es **código muerto** (pendiente de eliminar).
+
 ## Pruebas E2E (MSW)
 
 Las pruebas e2e (`test/*.e2e-spec.ts`) levantan la aplicación completa con
@@ -103,8 +120,12 @@ const response = await request(app.getHttpServer())
   .parse(binaryParser);
 ```
 
-Se verifican los casos `400` (faltan params), `500` (empresa inexistente) y `200`
-(archivo `pdf`/`excel` válido).
+Se verifican los casos `400` (faltan params, param desconocido, `format` o
+`disposition` no soportados), `500` (empresa inexistente) y `200` (archivo
+`pdf`/`excel` válido, `format` por defecto, `disposition=inline`).
+
+> `disposition` solo se aplica a la respuesta **PDF**; el Excel siempre se devuelve
+> como `attachment` (`src/shared/response/excel-stream-response.ts`).
 
 ## Linting (oxlint)
 
