@@ -1,19 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { PassThrough } from 'node:stream';
-import { ExcelReportService } from '../../report-generator/services/excel-report.service.js';
-import { PdfReportService } from '../../report-generator/services/pdf-report.service.js';
-import { getDateFilter } from '../../shared/utils/get-date-filter.js';
-import { EnterpriseConfigService } from '../enterprise/enterprise-config.service.js';
-import { EnterpriseConfig } from '../enterprise/entities/enterprise-config.entity.js';
+import { ExcelReportService } from '../../../report-generator/services/excel-report.service.js';
+import { PdfReportService } from '../../../report-generator/services/pdf-report.service.js';
+import { getDateFilter } from '../../../shared/utils/get-date-filter.js';
+import { EnterpriseConfigService } from '../../enterprise/enterprise-config.service.js';
+import { EnterpriseConfig } from '../../enterprise/entities/enterprise-config.entity.js';
 import {
   getFrequencies,
   getProgressName,
   getProgressOperationalContext,
   getProgressRecords,
   getProgressScope,
-} from './common/progress-report-common.js';
-import { ProgressReportQueryParams } from './dto/progress-report-query-params.js';
-import { ProgressReportResponse } from './interfaces/progress-report-response.interface.js';
+} from '../common/progress-report-common.js';
+import { ProgressReportQueryParams } from '../dto/progress-report-query-params.js';
+import { ProgressReportResponse } from '../interfaces/progress-report-response.interface.js';
 import { ProgressClientService } from './progress-client.service.js';
 
 @Injectable()

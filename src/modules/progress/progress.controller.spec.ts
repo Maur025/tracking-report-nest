@@ -4,7 +4,8 @@ import { PassThrough } from 'node:stream';
 import { beforeEach, describe, expect, it, Mock, vi } from 'vitest';
 import { ProgressReportQueryParams } from './dto/progress-report-query-params.js';
 import { ProgressController } from './progress.controller.js';
-import { ProgressService } from './progress.service.js';
+import { ProgressService } from './services/progress.service.js';
+import { QueueService } from './services/queue.service.js';
 
 describe('ProgressController', () => {
   let controller: ProgressController;
@@ -20,6 +21,7 @@ describe('ProgressController', () => {
           provide: ProgressService,
           useValue: { generateReportStream: mockGenerateReportStream },
         },
+        { provide: QueueService, useValue: {} },
       ],
     }).compile();
 

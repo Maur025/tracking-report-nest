@@ -1,15 +1,15 @@
 import { BadGatewayException, Injectable, Logger } from '@nestjs/common';
 import { HttpClient } from '@nestjs/http-client';
-import { streamPaginatedData } from '../../shared/utils/stream-paginated-data.js';
-import { transformSafeString } from '../../shared/utils/transform-safe-string.js';
-import { ProgressClientResponse } from './interfaces/progress-client-response.interface.js';
+import { streamPaginatedData } from '../../../shared/utils/stream-paginated-data.js';
+import { transformSafeString } from '../../../shared/utils/transform-safe-string.js';
+import { ProgressClientResponse } from '../interfaces/progress-client-response.interface.js';
 import {
   GetProgressReportDataParams,
   GetProgressReportDataResponse,
   GetProgressReportDataStreamParams,
-} from './interfaces/progress-client-service.interface.js';
-import { ProgressReportResponse } from './interfaces/progress-report-response.interface.js';
-import { progressReportResponseMapper } from './mapper/progress-report-response.mapper.js';
+} from '../interfaces/progress-client-service.interface.js';
+import { ProgressReportResponse } from '../interfaces/progress-report-response.interface.js';
+import { progressReportResponseMapper } from '../mapper/progress-report-response.mapper.js';
 
 @Injectable()
 export class ProgressClientService {
