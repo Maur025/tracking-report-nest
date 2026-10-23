@@ -10,9 +10,13 @@ import { QueueService } from './services/queue.service.js';
 describe('ProgressController', () => {
   let controller: ProgressController;
   let mockGenerateReportStream: Mock;
+  let mockAddReportToQueue: Mock;
+  let stream: PassThrough;
 
   beforeEach(async () => {
-    mockGenerateReportStream = vi.fn().mockResolvedValue(new PassThrough());
+    stream = new PassThrough();
+    mockGenerateReportStream = vi.fn().mockResolvedValue(stream);
+    mockAddReportToQueue = vi.fn();
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ProgressController],
@@ -21,7 +25,10 @@ describe('ProgressController', () => {
           provide: ProgressService,
           useValue: { generateReportStream: mockGenerateReportStream },
         },
-        { provide: QueueService, useValue: {} },
+        {
+          provide: QueueService,
+          useValue: { addReportToQueue: mockAddReportToQueue },
+        },
       ],
     }).compile();
 
@@ -57,6 +64,7 @@ describe('ProgressController', () => {
 
     // THEN
     expect(response).toBeInstanceOf(StreamableFile);
+    expect(response.getStream()).toBe(stream);
     expect(response.getHeaders().type).toBe('application/pdf');
     expect(response.getHeaders().disposition).toBe(
       'inline; filename=progress.pdf',
@@ -73,11 +81,50 @@ describe('ProgressController', () => {
 
     // THEN
     expect(response).toBeInstanceOf(StreamableFile);
+    expect(response.getStream()).toBe(stream);
     expect(response.getHeaders().type).toBe(
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     );
     expect(response.getHeaders().disposition).toBe(
       'attachment; filename=progress.xlsx',
     );
+  });
+  it('should propagate report generation errors', async () => {
+    const error = new Error('Generation failed');
+    mockGenerateReportStream.mockRejectedValue(error);
+
+    await expect(
+      controller.generateReportStream({
+        databaseName: 'db',
+        format: 'pdf',
+      } as ProgressReportQueryParams),
+    ).rejects.toBe(error);
+  });
+
+  describe('addReportToQueue', () => {
+    it('should pass the original payload to the queue and return its result', async () => {
+      const request = {
+        databaseName: 'db',
+        format: 'excel',
+      } as ProgressReportQueryParams;
+      const result = { reportRequestId: 'report-123' };
+      mockAddReportToQueue.mockResolvedValue(result);
+
+      expect(await controller.addReportToQueue(request)).toBe(result);
+      expect(mockAddReportToQueue).toHaveBeenCalledExactlyOnceWith(request);
+      expect(mockAddReportToQueue.mock.calls[0][0]).toBe(request);
+    });
+
+    it('should propagate queue errors', async () => {
+      const error = new Error('Queue failed');
+      mockAddReportToQueue.mockRejectedValue(error);
+
+      await expect(
+        controller.addReportToQueue({
+          databaseName: 'db',
+          format: 'excel',
+        } as ProgressReportQueryParams),
+      ).rejects.toBe(error);
+    });
   });
 });

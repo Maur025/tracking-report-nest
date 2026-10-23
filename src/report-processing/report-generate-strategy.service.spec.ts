@@ -34,13 +34,16 @@ describe('ReportGenerateStrategyService', () => {
   });
 
   describe('getStrategy', () => {
-    it('should return the strategy registered for the given type', () => {
-      // WHEN
-      const strategy = service.getStrategy('rules');
+    it.each([eventGenerator, rulesGenerator])(
+      'should return the strategy registered for $type',
+      (generator) => {
+        // WHEN
+        const strategy = service.getStrategy(generator.type);
 
-      // THEN
-      expect(strategy).toBe(rulesGenerator);
-    });
+        // THEN
+        expect(strategy).toBe(generator);
+      },
+    );
 
     it('should throw an error when the report type is empty', () => {
       // WHEN / THEN
@@ -77,6 +80,19 @@ describe('ReportGenerateStrategyService', () => {
 
       // THEN
       expect(strategy).toBe(duplicated);
+    });
+    it('should reject a type when no generators are registered', async () => {
+      const module = await Test.createTestingModule({
+        providers: [
+          ReportGenerateStrategyService,
+          { provide: REPORT_GENERATORS, useValue: [] },
+        ],
+      }).compile();
+      const emptyService = module.get(ReportGenerateStrategyService);
+
+      expect(() => emptyService.getStrategy('progress')).toThrow(
+        'Unsupported report type: progress',
+      );
     });
   });
 });
