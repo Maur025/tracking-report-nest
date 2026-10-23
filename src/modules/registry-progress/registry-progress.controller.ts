@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { excelStreamResponse } from '../../shared/response/excel-stream-response.js';
 import { pdfStreamResponse } from '../../shared/response/pdf-stream-response.js';
 import { RegistryProgressReportQueryParams } from './dto/registry-progress-report-query-params.js';
@@ -31,6 +39,7 @@ export class RegistryProgressController {
   }
 
   @Post('reports/queue')
+  @HttpCode(HttpStatus.ACCEPTED)
   async addReportToQueue(@Body() request: RegistryProgressReportQueryParams) {
     return this.queueService.addReportToQueue(request);
   }
