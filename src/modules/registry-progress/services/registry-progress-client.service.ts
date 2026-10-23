@@ -1,15 +1,15 @@
 import { BadGatewayException, Injectable, Logger } from '@nestjs/common';
 import { HttpClient } from '@nestjs/http-client';
-import { streamPaginatedData } from '../../shared/utils/stream-paginated-data.js';
-import { transformSafeString } from '../../shared/utils/transform-safe-string.js';
-import { RegistryProgressClientResponse } from './interfaces/registry-progress-client-response.interface.js';
+import { streamPaginatedData } from '../../../shared/utils/stream-paginated-data.js';
+import { transformSafeString } from '../../../shared/utils/transform-safe-string.js';
+import { RegistryProgressClientResponse } from '../interfaces/registry-progress-client-response.interface.js';
 import {
   GetRegistryProgressReportDataParams,
   GetRegistryProgressReportDataResponse,
   GetRegistryProgressReportDataStreamParams,
-} from './interfaces/registry-progress-client-service.interface.js';
-import { RegistryProgressReportResponse } from './interfaces/registry-progress-report-response.interface.js';
-import { registryProgressReportResponseMapper } from './mapper/registry-progress-report-response.mapper.js';
+} from '../interfaces/registry-progress-client-service.interface.js';
+import { RegistryProgressReportResponse } from '../interfaces/registry-progress-report-response.interface.js';
+import { registryProgressReportResponseMapper } from '../mapper/registry-progress-report-response.mapper.js';
 
 @Injectable()
 export class RegistryProgressClientService {

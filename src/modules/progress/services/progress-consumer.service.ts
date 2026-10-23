@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { PassThrough } from 'node:stream';
 import { ReportRequest } from '../../../report-management/entities/report-request.entity.js';
+import { ReportTypeEnum } from '../../../report-management/enums/report-type-enum.js';
 import { ReportGenerator } from '../../../report-management/interfaces/report-generator.js';
 import { ProgressReportQueryParams } from '../dto/progress-report-query-params.js';
 import { ProgressService } from './progress.service.js';
 
 @Injectable()
 export class ProgressConsumerService implements ReportGenerator {
-  type: string = 'progress';
+  type: string = ReportTypeEnum.PROGRESS;
 
   constructor(private readonly progressService: ProgressService) {}
 

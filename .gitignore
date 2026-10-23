@@ -62,3 +62,6 @@ database/*
 *.sqlite
 
 public/
+
+# registers ai 
+.atl/

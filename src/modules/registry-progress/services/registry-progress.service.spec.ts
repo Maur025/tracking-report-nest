@@ -2,11 +2,11 @@ import { Temporal } from '@js-temporal/polyfill';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PassThrough } from 'node:stream';
 import { beforeEach, describe, expect, it, Mock, vi } from 'vitest';
-import { ExcelReportService } from '../../report-generator/services/excel-report.service.js';
-import { PdfReportService } from '../../report-generator/services/pdf-report.service.js';
-import { EnterpriseConfigService } from '../enterprise/enterprise-config.service.js';
-import type { EnterpriseConfig } from '../enterprise/entities/enterprise-config.entity.js';
-import { RegistryProgressReportQueryParams } from './dto/registry-progress-report-query-params.js';
+import { ExcelReportService } from '../../../report-generator/services/excel-report.service.js';
+import { PdfReportService } from '../../../report-generator/services/pdf-report.service.js';
+import { EnterpriseConfigService } from '../../enterprise/enterprise-config.service.js';
+import type { EnterpriseConfig } from '../../enterprise/entities/enterprise-config.entity.js';
+import { RegistryProgressReportQueryParams } from '../dto/registry-progress-report-query-params.js';
 import { RegistryProgressClientService } from './registry-progress-client.service.js';
 import { RegistryProgressService } from './registry-progress.service.js';
 

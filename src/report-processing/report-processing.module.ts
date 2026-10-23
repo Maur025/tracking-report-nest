@@ -5,6 +5,8 @@ import { EventModule } from '../modules/event/event.module.js';
 import { EventConsumerService } from '../modules/event/services/event-consumer.service.js';
 import { ProgressModule } from '../modules/progress/progress.module.js';
 import { ProgressConsumerService } from '../modules/progress/services/progress-consumer.service.js';
+import { RegistryProgressModule } from '../modules/registry-progress/registry-progress.module.js';
+import { RegistryProgressConsumerService } from '../modules/registry-progress/services/registry-progress-consumer.service.js';
 import { ReportGenerator } from '../report-management/interfaces/report-generator.js';
 import { ReportManagementModule } from '../report-management/report-management.module.js';
 import { ReportConsumer } from './report-consumer.js';
@@ -22,6 +24,8 @@ import { REPORT_GENERATORS } from './report-generators-token.js';
     EventModule,
 
     ProgressModule,
+
+    RegistryProgressModule,
   ],
   providers: [
     ReportGenerateStrategyService,
@@ -31,8 +35,13 @@ import { REPORT_GENERATORS } from './report-generators-token.js';
       useFactory: (
         event: EventConsumerService,
         progress: ProgressConsumerService,
-      ): ReportGenerator[] => [event, progress],
-      inject: [EventConsumerService, ProgressConsumerService],
+        registryProgress: RegistryProgressConsumerService,
+      ): ReportGenerator[] => [event, progress, registryProgress],
+      inject: [
+        EventConsumerService,
+        ProgressConsumerService,
+        RegistryProgressConsumerService,
+      ],
     },
   ],
 })
