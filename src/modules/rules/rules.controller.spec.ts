@@ -4,7 +4,8 @@ import { PassThrough } from 'node:stream';
 import { beforeEach, describe, expect, it, Mock, vi } from 'vitest';
 import { RulesReportQueryParams } from './dto/rules-report-query-params.js';
 import { RulesController } from './rules.controller.js';
-import { RulesService } from './rules.service.js';
+import { QueueService } from './services/queue.service.js';
+import { RulesService } from './services/rules.service.js';
 
 describe('RulesController', () => {
   let controller: RulesController;
@@ -20,6 +21,10 @@ describe('RulesController', () => {
           provide: RulesService,
           useValue: { generateReportStream: mockGenerateReportStream },
         },
+        {
+          provide: QueueService,
+          useValue: {},
+        },
       ],
     }).compile();
 
@@ -32,7 +37,10 @@ describe('RulesController', () => {
 
   it('should delegate the report generation to the service', async () => {
     // GIVEN
-    const params = { databaseName: 'db', format: 'excel' } as RulesReportQueryParams;
+    const params = {
+      databaseName: 'db',
+      format: 'excel',
+    } as RulesReportQueryParams;
 
     // WHEN
     await controller.generateReportStream(params);
@@ -53,7 +61,9 @@ describe('RulesController', () => {
     // THEN
     expect(response).toBeInstanceOf(StreamableFile);
     expect(response.getHeaders().type).toBe('application/pdf');
-    expect(response.getHeaders().disposition).toBe('inline; filename=rules.pdf');
+    expect(response.getHeaders().disposition).toBe(
+      'inline; filename=rules.pdf',
+    );
   });
 
   it('should respond with an excel stream otherwise', async () => {

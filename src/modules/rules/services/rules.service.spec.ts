@@ -2,11 +2,11 @@ import { Temporal } from '@js-temporal/polyfill';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PassThrough } from 'node:stream';
 import { beforeEach, describe, expect, it, Mock, vi } from 'vitest';
-import { ExcelReportService } from '../../report-generator/services/excel-report.service.js';
-import { PdfReportService } from '../../report-generator/services/pdf-report.service.js';
-import { EnterpriseConfigService } from '../enterprise/enterprise-config.service.js';
-import type { EnterpriseConfig } from '../enterprise/entities/enterprise-config.entity.js';
-import { RulesReportQueryParams } from './dto/rules-report-query-params.js';
+import { ExcelReportService } from '../../../report-generator/services/excel-report.service.js';
+import { PdfReportService } from '../../../report-generator/services/pdf-report.service.js';
+import { EnterpriseConfigService } from '../../enterprise/enterprise-config.service.js';
+import { EnterpriseConfig } from '../../enterprise/entities/enterprise-config.entity.js';
+import { RulesReportQueryParams } from '../dto/rules-report-query-params.js';
 import { RulesClientService } from './rules-client.service.js';
 import { RulesService } from './rules.service.js';
 
@@ -118,7 +118,7 @@ describe('RulesService', () => {
       toDate,
       type: 'SENSORS',
       frequencyWeekday: 1,
-    } as RulesReportQueryParams);
+    } as unknown as RulesReportQueryParams);
     await mockExcelGenerate.mock.calls[0][0].dataSource();
 
     // THEN

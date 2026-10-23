@@ -7,6 +7,8 @@ import { ProgressModule } from '../modules/progress/progress.module.js';
 import { ProgressConsumerService } from '../modules/progress/services/progress-consumer.service.js';
 import { RegistryProgressModule } from '../modules/registry-progress/registry-progress.module.js';
 import { RegistryProgressConsumerService } from '../modules/registry-progress/services/registry-progress-consumer.service.js';
+import { RulesModule } from '../modules/rules/rules.module.js';
+import { RulesConsumerService } from '../modules/rules/services/rules-consumer.service.js';
 import { ReportGenerator } from '../report-management/interfaces/report-generator.js';
 import { ReportManagementModule } from '../report-management/report-management.module.js';
 import { ReportConsumer } from './report-consumer.js';
@@ -26,6 +28,8 @@ import { REPORT_GENERATORS } from './report-generators-token.js';
     ProgressModule,
 
     RegistryProgressModule,
+
+    RulesModule,
   ],
   providers: [
     ReportGenerateStrategyService,
@@ -36,11 +40,13 @@ import { REPORT_GENERATORS } from './report-generators-token.js';
         event: EventConsumerService,
         progress: ProgressConsumerService,
         registryProgress: RegistryProgressConsumerService,
-      ): ReportGenerator[] => [event, progress, registryProgress],
+        rules: RulesConsumerService,
+      ): ReportGenerator[] => [event, progress, registryProgress, rules],
       inject: [
         EventConsumerService,
         ProgressConsumerService,
         RegistryProgressConsumerService,
+        RulesConsumerService,
       ],
     },
   ],
