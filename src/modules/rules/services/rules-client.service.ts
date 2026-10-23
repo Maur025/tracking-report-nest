@@ -1,15 +1,15 @@
 import { BadGatewayException, Injectable, Logger } from '@nestjs/common';
 import { HttpClient } from '@nestjs/http-client';
-import { streamPaginatedData } from '../../shared/utils/stream-paginated-data.js';
-import { transformSafeString } from '../../shared/utils/transform-safe-string.js';
-import { RulesClientResponse } from './interfaces/rules-client-response.interface.js';
+import { streamPaginatedData } from '../../../shared/utils/stream-paginated-data.js';
+import { transformSafeString } from '../../../shared/utils/transform-safe-string.js';
+import { RulesClientResponse } from '../interfaces/rules-client-response.interface.js';
 import {
   GetRulesReportDataParams,
   GetRulesReportDataResponse,
   GetRulesReportDataStreamParams,
-} from './interfaces/rules-client-service.interface.js';
-import { RulesReportResponse } from './interfaces/rules-report-response.interface.js';
-import { rulesReportResponseMapper } from './mapper/rules-report-response.mapper.js';
+} from '../interfaces/rules-client-service.interface.js';
+import { RulesReportResponse } from '../interfaces/rules-report-response.interface.js';
+import { rulesReportResponseMapper } from '../mapper/rules-report-response.mapper.js';
 
 @Injectable()
 export class RulesClientService {

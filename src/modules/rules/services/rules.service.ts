@@ -1,19 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { PassThrough } from 'node:stream';
-import { ExcelReportService } from '../../report-generator/services/excel-report.service.js';
-import { PdfReportService } from '../../report-generator/services/pdf-report.service.js';
-import { getDateFilter } from '../../shared/utils/get-date-filter.js';
-import { EnterpriseConfigService } from '../enterprise/enterprise-config.service.js';
-import { EnterpriseConfig } from '../enterprise/entities/enterprise-config.entity.js';
+import { ExcelReportService } from '../../../report-generator/services/excel-report.service.js';
+import { PdfReportService } from '../../../report-generator/services/pdf-report.service.js';
+import { getDateFilter } from '../../../shared/utils/get-date-filter.js';
+import { EnterpriseConfigService } from '../../enterprise/enterprise-config.service.js';
+import { EnterpriseConfig } from '../../enterprise/entities/enterprise-config.entity.js';
 import {
   getFrequencies,
   getRuleEvents,
   getRuleName,
   getRuleOperationalContext,
   getRuleScope,
-} from './common/rules-report-common.js';
-import { RulesReportQueryParams } from './dto/rules-report-query-params.js';
-import { RulesReportResponse } from './interfaces/rules-report-response.interface.js';
+} from '../common/rules-report-common.js';
+import { RulesReportQueryParams } from '../dto/rules-report-query-params.js';
+import { RulesReportResponse } from '../interfaces/rules-report-response.interface.js';
 import { RulesClientService } from './rules-client.service.js';
 
 @Injectable()

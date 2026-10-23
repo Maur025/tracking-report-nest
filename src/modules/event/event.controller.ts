@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { excelStreamResponse } from '../../shared/response/excel-stream-response.js';
 import { pdfStreamResponse } from '../../shared/response/pdf-stream-response.js';
 import { EventReportQueryParams } from './dto/event-report-query-params.js';
@@ -30,6 +38,7 @@ export class EventController {
   }
 
   @Post('reports/queue')
+  @HttpCode(HttpStatus.ACCEPTED)
   async addReportToQueue(@Body() request: EventReportQueryParams) {
     return this.queueService.addReportToQueue(request);
   }
