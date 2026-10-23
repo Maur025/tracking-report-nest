@@ -35,8 +35,10 @@ Puntos clave:
   en `NODE_ENV=test`** (así lo levantan las pruebas e2e sobre `:memory:`). En
   desarrollo/producción se aplican con `pnpm migration:run`.
 
-> La base de datos **no** almacena datos de rastreo; solo el **catálogo de empresas
-> y sus configuraciones**. Los datos de rastreo viven en las APIs externas.
+> La base de datos **no** almacena datos de rastreo; guarda el **catálogo de
+> empresas y sus configuraciones** e incluye la tabla `report_requests` para las
+> **solicitudes de reporte** (persistencia aún no operativa). Los datos de rastreo
+> viven en las APIs externas.
 
 ## Entidades
 
@@ -77,6 +79,23 @@ Relación: `OneToMany` con `EnterpriseConfig`.
   al recibir empresas por WebSocket.
 - **Propiedad calculada:** `hostUrl` devuelve `http://${host}:${port}` (usada por los
   *client services*).
+
+### `ReportRequest` → tabla `report_requests`
+
+`src/report-management/entities/report-request.entity.ts`
+
+| Columna | Tipo | Nulo | Descripción |
+|---|---|---|---|
+| `id` | varchar (uuid) | no | PK (heredada de `BaseEntity`). |
+| `created_at`, `created_by`, `updated_at`, `updated_by` | — | no | Heredadas. |
+| `type` | text | no | Tipo de reporte solicitado. |
+| `payload` | simple-json | no | Datos de entrada de la solicitud. |
+| `status` | text | no | Estado (`ReportStatusEnum`), default `PENDING`. |
+| `file_path` | text | sí | Ruta del archivo generado. |
+| `error_message` | text | sí | Mensaje de error si falla. |
+
+`ReportStatusEnum` (`src/report-management/enums/report-status.enum.ts`):
+`PENDING`, `PROCESSING`, `COMPLETED`, `FAILED`.
 
 ### `BaseEntity` (abstracta)
 
@@ -123,6 +142,7 @@ configs de forma atómica) y en `EnterpriseService.create`.
 | `1790803023261` | Crea la tabla `enterprises`. |
 | `1790805293957` | Crea `enterprise_configs` y añade la FK a `enterprises` con `ON DELETE CASCADE`. |
 | `1790806074206` | Crea el índice único `uq_configs_database_ref_id_enterprise_ref_id`. |
+| `1792178283481` | Crea la tabla `report_requests` (`type`, `payload`, `status` con default `PENDING`, `file_path`, `error_message`). |
 
 ### Comandos
 
@@ -170,10 +190,24 @@ erDiagram
         text reference_id
         varchar enterprise_ref_id FK
     }
+
+    REPORT_REQUESTS {
+        varchar id PK
+        datetime created_at
+        text created_by
+        datetime updated_at
+        text updated_by
+        text type
+        json payload
+        text status
+        text file_path
+        text error_message
+    }
 ```
 
 > `reference_id`, `database` y `enterprise_ref_id` forman el índice único
-> `uq_configs_database_ref_id_enterprise_ref_id`.
+> `uq_configs_database_ref_id_enterprise_ref_id`. `report_requests` es una tabla
+> independiente; todavía no tiene relación con las empresas.
 
 Flujo típico: el *processor* envía empresas por WebSocket → se hace *upsert* de la
 empresa y sus configuraciones → las peticiones de reporte resuelven la configuración

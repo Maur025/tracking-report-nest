@@ -2,8 +2,8 @@ import { Temporal } from '@js-temporal/polyfill';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PassThrough } from 'node:stream';
 import { beforeEach, describe, expect, it, Mock, vi } from 'vitest';
-import { ExcelReportService } from '../../report/services/excel-report.service.js';
-import { PdfReportService } from '../../report/services/pdf-report.service.js';
+import { ExcelReportService } from '../../report-generator/services/excel-report.service.js';
+import { PdfReportService } from '../../report-generator/services/pdf-report.service.js';
 import { EnterpriseConfigService } from '../enterprise/enterprise-config.service.js';
 import type { EnterpriseConfig } from '../enterprise/entities/enterprise-config.entity.js';
 import { RulesReportQueryParams } from './dto/rules-report-query-params.js';
@@ -15,7 +15,7 @@ const enterpriseConfig = {
   hostUrl: 'http://enterprise-host:8080',
 } as EnterpriseConfig;
 
-const emptyStream = () => (async function* () {});
+const emptyStream = () => async function* () {};
 
 describe('RulesService', () => {
   let service: RulesService;
@@ -35,7 +35,9 @@ describe('RulesService', () => {
         RulesService,
         {
           provide: RulesClientService,
-          useValue: { getProgressReportDataStream: mockGetRulesReportDataStream },
+          useValue: {
+            getProgressReportDataStream: mockGetRulesReportDataStream,
+          },
         },
         { provide: PdfReportService, useValue: { generate: mockPdfGenerate } },
         {
@@ -95,7 +97,9 @@ describe('RulesService', () => {
     // THEN
     expect(mockPdfGenerate).toHaveBeenCalledTimes(1);
     expect(mockExcelGenerate).not.toHaveBeenCalled();
-    expect(mockPdfGenerate.mock.calls[0][0].mainTitle).toBe('Reporte de reglas');
+    expect(mockPdfGenerate.mock.calls[0][0].mainTitle).toBe(
+      'Reporte de reglas',
+    );
   });
 
   it('should wire the data source with the resolved host and filters', async () => {

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { beforeEach, describe, expect, it, Mock, vi } from 'vitest';
+import { PaginationDto } from '../../shared/dto/pagination.dto.js';
 import { CreateEnterpriseDto } from './dto/create-enterprise.dto.js';
-import { UpdateEnterpriseDto } from './dto/update-enterprise.dto.js';
 import { EnterpriseController } from './enterprise.controller.js';
 import { EnterpriseService } from './enterprise.service.js';
 
@@ -11,7 +11,6 @@ describe('EnterpriseController', () => {
     create: Mock;
     findAll: Mock;
     findOne: Mock;
-    update: Mock;
     remove: Mock;
   };
 
@@ -20,7 +19,6 @@ describe('EnterpriseController', () => {
       create: vi.fn(),
       findAll: vi.fn(),
       findOne: vi.fn(),
-      update: vi.fn(),
       remove: vi.fn(),
     };
 
@@ -49,20 +47,18 @@ describe('EnterpriseController', () => {
     expect(mockService.create).toHaveBeenCalledWith(dto);
   });
 
-  it('should delegate the remaining operations to the service', () => {
+  it('should delegate the remaining operations to the service', async () => {
     // GIVEN
-    const updateDto = { name: 'Acme' } as UpdateEnterpriseDto;
+    const paginationDto = { page: 0, size: 10 } as PaginationDto;
 
     // WHEN
-    controller.findAll();
-    controller.findOne('1');
-    controller.update('1', updateDto);
-    controller.remove('1');
+    await controller.findAll(paginationDto);
+    await controller.findOne('1');
+    await controller.remove('1');
 
     // THEN
-    expect(mockService.findAll).toHaveBeenCalled();
-    expect(mockService.findOne).toHaveBeenCalledWith(1);
-    expect(mockService.update).toHaveBeenCalledWith(1, updateDto);
-    expect(mockService.remove).toHaveBeenCalledWith(1);
+    expect(mockService.findAll).toHaveBeenCalledWith(paginationDto);
+    expect(mockService.findOne).toHaveBeenCalledWith('1');
+    expect(mockService.remove).toHaveBeenCalledWith('1');
   });
 });

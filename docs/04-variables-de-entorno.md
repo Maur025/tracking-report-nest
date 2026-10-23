@@ -12,8 +12,8 @@ envFilePath: !process.env.NODE_ENV ? '.env' : `.env.${process.env.NODE_ENV}`
 - **Producción:** `.env.production` (o variables inyectadas por el entorno)
 
 La validación la realiza **Zod** con el esquema `src/config/environment.schema.ts`.
-La mayoría de las variables numéricas se reciben como *string* y se transforman a
-número con `parseInt`.
+Las variables numéricas se reciben como *string* y se convierten/validan con
+`z.coerce.number()`.
 
 ---
 
@@ -22,18 +22,25 @@ número con `parseInt`.
 | Variable | Tipo | Valor por defecto (esquema) | Ejemplo `.env` | Propósito |
 |---|---|---|---|---|
 | `APP_ID` | string | `REPORT01` | `"REP01"` | Identificador de la aplicación. |
-| `APP_NAME` | string | `tracking-report` | `"Tracking-report"` | Nombre legible de la aplicación. |
+| `APP_NAME` | string | `tracking-report` | `"tracking-report"` | Nombre legible de la aplicación. |
 | `TZ` | string | `America/La_Paz` | `"America/La_Paz"` | Zona horaria por defecto del proceso. |
-| `WS_PORT` | number (int) | `10701` | `10701` | Puerto WebSocket del servicio. |
-| `APP_PORT` | number (int) | `10801` | `10801` | Puerto HTTP donde escucha la app y se publica ante el *processor*. |
+| `WS_PORT` | number (port) | `10701` | `10701` | Puerto WebSocket del servicio. |
+| `APP_PORT` | number (port) | `10801` | `10801` | Puerto HTTP donde escucha la app y se publica ante el *processor*. |
 | `WS_GATEWAY_HOST_PROCESSOR` | string | `localhost` | `172.20.50.123` | Host del *gateway/processor* al que se conecta por WebSocket. |
-| `WS_GATEWAY_PORT_PROCESSOR` | number (int) | `7170` | `7170` | Puerto del *gateway/processor*. |
-| `UUID` | string | `f0f0f0f0` | `c2dd86f2` | Identificador único con el que el servicio se registra ante el *processor*. |
-| `PING_INTERVAL_MS` | number (int) | `5000` | `5000` | Intervalo (ms) pensado para el evento `time.ping` (scheduler sin uso). |
-| `STORAGE_INTERVAL_HRS` | number (int) | *(ver nota)* | `1` | Intervalo (horas) pensado para el evento `time.storage` (scheduler sin uso). |
-| `SAVE_INTERVAL_MIN` | number (int) | `5` | `5` | Intervalo (minutos) pensado para el evento `time.save` (scheduler sin uso). |
+| `WS_GATEWAY_PORT_PROCESSOR` | number (port) | `7170` | `7170` | Puerto del *gateway/processor*. |
+| `UUID` | string | `f0f0f0f0` | `e430add2` | Identificador único con el que el servicio se registra ante el *processor*. |
+| `PING_INTERVAL_MS` | number (int ≥ 2) | `5000` | `5000` | Intervalo (ms) pensado para el evento `time.ping` (scheduler sin uso). |
+| `STORAGE_INTERNAL_HRS` | number (int ≥ 1) | `1` | *(el `.env` declara `STORAGE_INTERVAL_HRS=1`, ver nota)* | Intervalo (horas) validado por Zod para el evento `time.storage`. |
+| `SAVE_INTERVAL_MIN` | number (int ≥ 1) | `5` | `5` | Intervalo (minutos) pensado para el evento `time.save` (scheduler sin uso). |
 | `DB_URL` | string | `./database/tracking-report.sqlite` | `./database/tracking-report.sqlite` | Ruta del archivo SQLite usado por la aplicación. |
-| `NODE_ENV` | string | `development` | *(sin definir)* | Entorno de ejecución. Selecciona el archivo `.env.<NODE_ENV>` y activa `migrationsRun` cuando vale `test`. |
+| `NODE_ENV` | string enum | `development` | *(sin definir)* | Entorno de ejecución. Selecciona el archivo `.env.<NODE_ENV>` y activa `migrationsRun` cuando vale `test`. |
+| `REDIS_HOST` | string | `localhost` | `localhost` | Host de Redis usado por BullMQ. |
+| `REDIS_PORT` | number (port) | `6379` | `6379` | Puerto de Redis. |
+| `BULLMQ_JOB_ATTEMPTS` | number (int ≥ 1) | `3` | `3` | Reintentos por job antes de marcarlo como fallido. |
+| `BULLMQ_JOB_BACKOFF_TYPE` | string enum | `exponential` | `exponential` | Estrategia de espera entre reintentos (`exponential` o `fixed`). |
+| `BULLMQ_JOB_BACKOFF_DELAY` | number (int ≥ 100) | `1000` | `1000` | Retardo base (ms) del backoff. |
+| `BULLMQ_JOB_REMOVE_ON_COMPLETE` | number (int ≥ 0) | `100` | `1000` | Cantidad de jobs completados a conservar (o `true`/`false` en BullMQ; aquí se tipa como número). |
+| `BULLMQ_JOB_REMOVE_ON_FAIL` | number (int ≥ 0) | `500` | `2000` | Cantidad de jobs fallidos a conservar. |
 
 ---
 
@@ -77,6 +84,21 @@ gateway y está pendiente de eliminar (ver [01 — Estado actual](./01-estado-ac
 > `.env` se conserva en `process.env` y el servicio la lee igual, pero el esquema
 > valida un nombre distinto. Al eliminar el scheduler, estas variables desaparecen.
 
+### Cola y Redis
+
+- **`REDIS_HOST` / `REDIS_PORT`** — Dirección del broker Redis que usa BullMQ.
+  `QueueModule` los pasa a `BullModule.forRootAsync` al inicializar la conexión.
+- **`BULLMQ_JOB_ATTEMPTS`** — Número de intentos por job.
+- **`BULLMQ_JOB_BACKOFF_TYPE` / `BULLMQ_JOB_BACKOFF_DELAY`** — Estrategia y retardo
+  del backoff entre reintentos.
+- **`BULLMQ_JOB_REMOVE_ON_COMPLETE` / `BULLMQ_JOB_REMOVE_ON_FAIL`** — Cuántos jobs
+  completados/fallidos se conservan en Redis (`removeOnComplete` / `removeOnFail`).
+  El `.env` actual usa `1000` y `2000`, valores distintos de los defaults del
+  esquema (`100` y `500`).
+
+> En las pruebas e2e `createTestApp` reemplaza `QueueModule` por un módulo vacío,
+> por lo que **no se necesita Redis** para correrlas.
+
 ### Base de datos
 
 - **`DB_URL`** — Ruta del archivo SQLite para la aplicación en ejecución
@@ -95,7 +117,7 @@ gateway y está pendiente de eliminar (ver [01 — Estado actual](./01-estado-ac
 
 ```dotenv
 APP_ID="REP01"
-APP_NAME="Tracking-report"
+APP_NAME="tracking-report"
 TZ="America/La_Paz"
 
 WS_PORT=10701
@@ -104,13 +126,22 @@ APP_PORT=10801
 WS_GATEWAY_HOST_PROCESSOR=172.20.50.123
 WS_GATEWAY_PORT_PROCESSOR=7170
 
-UUID=c2dd86f2
+UUID=e430add2
 
 PING_INTERVAL_MS=5000
 STORAGE_INTERVAL_HRS=1
 SAVE_INTERVAL_MIN=5
 
 DB_URL=./database/tracking-report.sqlite
+
+REDIS_HOST=localhost
+REDIS_PORT=6379
+
+BULLMQ_JOB_ATTEMPTS=3
+BULLMQ_JOB_BACKOFF_TYPE=exponential
+BULLMQ_JOB_BACKOFF_DELAY=1000
+BULLMQ_JOB_REMOVE_ON_COMPLETE=1000
+BULLMQ_JOB_REMOVE_ON_FAIL=2000
 ```
 
 ### `.env.test` (pruebas)
@@ -133,6 +164,15 @@ STORAGE_INTERVAL_HRS=1
 SAVE_INTERVAL_MIN=5
 
 DB_URL=:memory:
+
+REDIS_HOST=localhost
+REDIS_PORT=6379
+
+BULLMQ_JOB_ATTEMPTS=3
+BULLMQ_JOB_BACKOFF_TYPE=exponential
+BULLMQ_JOB_BACKOFF_DELAY=1000
+BULLMQ_JOB_REMOVE_ON_COMPLETE=1000
+BULLMQ_JOB_REMOVE_ON_FAIL=2000
 ```
 
 ---

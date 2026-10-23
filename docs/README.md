@@ -8,7 +8,8 @@ horaria, vehículos, reglas, etc.), consulta las bases de datos operativas de ca
 empresa vía HTTP en forma paginada, y devuelve el resultado como **Excel** o
 **PDF** en streaming. Además se conecta por **WebSocket** a un *gateway/processor*
 central desde el que recibe el catálogo de empresas y sus configuraciones de base
-de datos.
+de datos, e integra una **cola BullMQ/Redis** para la gestión de reportes (en fase
+inicial).
 
 Esta carpeta está pensada para que **cualquier persona pueda entender el proyecto sin
 necesidad de que alguien se lo explique de viva voz**.
@@ -23,7 +24,7 @@ necesidad de que alguien se lo explique de viva voz**.
 | [02 — Tecnologías](./02-tecnologias.md) | Stack completo, versiones, propósito de cada tecnología en el proyecto y enlaces oficiales. |
 | [03 — Instalación y ejecución](./03-instalacion-y-ejecucion.md) | Requisitos, instalación, scripts, migraciones y solución de problemas. |
 | [04 — Variables de entorno](./04-variables-de-entorno.md) | Propósito, tipo, valor por defecto y ejemplo de cada variable. |
-| [05 — Arquitectura](./05-arquitectura.md) | Módulos, flujo de datos e integraciones (HTTP y WebSocket). |
+| [05 — Arquitectura](./05-arquitectura.md) | Módulos, flujo de datos, cola BullMQ/Redis e integraciones (HTTP y WebSocket). |
 | [06 — API](./06-api.md) | Endpoints, parámetros de consulta y ejemplos `curl`. |
 | [07 — Base de datos](./07-base-de-datos.md) | SQLite, entidades, transacciones y migraciones. |
 | [08 — Testing y calidad](./08-testing-y-calidad.md) | Vitest, oxlint, Prettier y CI. |

@@ -12,7 +12,7 @@ Las versiones provienen de `package.json`. El símbolo `^` indica que el
 | Tecnología | Versión | Propósito en este proyecto | Documentación |
 |---|---|---|---|
 | **Node.js** | 24 (CI) | Runtime de ejecución. El pipeline de CI fija `node@24`. | https://nodejs.org/docs/latest-v24.x/api/ |
-| **pnpm** | 12.10.1 | Gestor de paquetes (declarado con `packageManager`). | https://pnpm.io |
+| **pnpm** | 12.11.2 | Gestor de paquetes (declarado con `packageManager`). | https://pnpm.io |
 | **TypeScript** | ^6.0.3 | Lenguaje del proyecto. Config estricta (`strict: true`, `module: nodenext`). | https://www.typescriptlang.org/docs/ |
 
 ## Framework principal
@@ -30,9 +30,9 @@ Las versiones provienen de `package.json`. El símbolo `^` indica que el
 | Tecnología | Versión | Propósito en este proyecto | Documentación |
 |---|---|---|---|
 | **`@nestjs/typeorm`** | ^12.0.2 | Integración de TypeORM con Nest (`forRootAsync`, `forFeature`, `@InjectRepository`). | https://docs.nestjs.com/techniques/database |
-| **TypeORM** | ^1.1.2 | ORM para SQLite: entidades `Enterprise`/`EnterpriseConfig` y migraciones. | https://typeorm.io |
+| **TypeORM** | ^1.1.2 | ORM para SQLite: entidades `Enterprise`/`EnterpriseConfig`/`ReportRequest` y migraciones. | https://typeorm.io |
 | **better-sqlite3** | ^13.0.3 | Driver SQLite síncrono usado por TypeORM (`type: 'better-sqlite3'`) con WAL. | https://github.com/WiseLibs/better-sqlite3 |
-| **`@nestjs/http-client`** | ^0.0.1 | Cliente HTTP global (registrado con timeout `10s`) para consultar las APIs de las empresas. | *(interno del equipo)* |
+| **`@nestjs/http-client`** | ^0.0.2 | Cliente HTTP global (registrado con timeout `10s`) para consultar las APIs de las empresas. | *(interno del equipo)* |
 | **`@nestjs/mapped-types`** | ^12.0.0 | Utilidades como `PartialType` para DTOs de actualización. | https://docs.nestjs.com/openapi/mapped-types |
 | **Zod** | ^4.6.7 | Validación/tipado del esquema de variables de entorno (`environment.schema.ts`). | https://zod.dev |
 | **class-validator** | ^0.15.1 | Validación declarativa de DTOs de entrada (query params y bodies). | https://github.com/typestack/class-validator |
@@ -46,6 +46,15 @@ Las versiones provienen de `package.json`. El símbolo `^` indica que el
 | **ExcelJS** | ^4.4.0 | Generación de reportes Excel en streaming (`WorkbookWriter`). | https://github.com/exceljs/exceljs |
 | **PDFKit** | ^0.20.2 | Generación de reportes PDF (tablas, encabezados, fuentes). | https://pdfkit.org |
 | **`@types/pdfkit`** | ^0.17.6 | Tipos de TypeScript para PDFKit. | https://www.npmjs.com/package/@types/pdfkit |
+
+## Colas y mensajería
+
+| Tecnología | Versión | Propósito en este proyecto | Documentación |
+|---|---|---|---|
+| **`@nestjs/bullmq`** | ^12.0.0 | Integración de BullMQ con Nest (`BullModule.forRootAsync`, `@InjectQueue`, `@Processor`). Usado por `QueueModule` y `ReportManagementModule`. | https://docs.nestjs.com/techniques/queues |
+| **BullMQ** | ^6.3.14 | Cola de jobs `report-queue` (`generate-pdf`, `generate-excel`) con reintentos y backoff. | https://docs.bullmq.io |
+| **ioredis** | ^6.0.0 | Cliente Redis usado por BullMQ para conectarse al broker. | https://github.com/redis/ioredis |
+| **Redis** | Servidor externo | Broker que transporta y persiste los jobs de la cola. Requerido para `pnpm start`/`pnpm start:dev`; en e2e el `QueueModule` se reemplaza por un mock. | https://redis.io/docs/ |
 
 ## Integración y dominio
 

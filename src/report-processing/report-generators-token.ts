@@ -1,0 +1,1 @@
+export const REPORT_GENERATORS = Symbol('REPORT_GENERATORS');

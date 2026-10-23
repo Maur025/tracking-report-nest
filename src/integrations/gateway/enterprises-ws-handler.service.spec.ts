@@ -86,6 +86,95 @@ describe('EnterprisesWsHandlerService', () => {
     );
   });
 
+  describe('edge cases', () => {
+    it('should not save anything when the payload is empty', async () => {
+      // WHEN
+      await service.saveEnterprisesWithConfigurations([]);
+
+      // THEN
+      expect(mockEnterpriseSave).not.toHaveBeenCalled();
+      expect(mockEnterpriseConfigSave).not.toHaveBeenCalled();
+    });
+
+    it('should skip the enterprises without id or name', async () => {
+      // GIVEN
+      const payload = [
+        { ...wsPayload[0], id: undefined },
+        { ...wsPayload[1], name: undefined },
+      ] as EnterpriseWsPayload[];
+
+      // WHEN
+      await service.saveEnterprisesWithConfigurations(payload);
+
+      // THEN
+      expect(mockEnterpriseCreate).not.toHaveBeenCalled();
+      expect(mockEnterpriseSave).not.toHaveBeenCalled();
+      expect(mockEnterpriseConfigSave).not.toHaveBeenCalled();
+    });
+
+    it('should skip the configuration when the database information is incomplete', async () => {
+      // GIVEN
+      const payload = [
+        {
+          ...wsPayload[0],
+          database: { ...wsPayload[0].database, server: undefined },
+        },
+        {
+          ...wsPayload[1],
+          database: { ...wsPayload[1].database, codename: undefined },
+        },
+        {
+          ...wsPayload[2],
+          database: { ...wsPayload[2].database, id: undefined },
+        },
+      ] as EnterpriseWsPayload[];
+
+      // WHEN
+      await service.saveEnterprisesWithConfigurations(payload);
+
+      // THEN
+      expect(mockEnterpriseConfigCreate).not.toHaveBeenCalled();
+      expect(mockEnterpriseConfigSave).not.toHaveBeenCalled();
+      expect(mockEnterpriseSave).toHaveBeenCalledTimes(1);
+    });
+
+    it('should skip the configuration when the server has no address', async () => {
+      // GIVEN
+      const payload = [
+        {
+          ...wsPayload[0],
+          database: {
+            ...wsPayload[0].database,
+            server: { ...wsPayload[0].database.server, address: undefined },
+          },
+        },
+      ] as EnterpriseWsPayload[];
+
+      // WHEN
+      await service.saveEnterprisesWithConfigurations(payload);
+
+      // THEN
+      expect(mockEnterpriseConfigCreate).not.toHaveBeenCalled();
+      expect(mockEnterpriseConfigSave).not.toHaveBeenCalled();
+    });
+
+    it('should build the configuration with the port as a string', async () => {
+      // WHEN
+      await service.saveEnterprisesWithConfigurations([wsPayload[0]]);
+
+      // THEN
+      expect(mockEnterpriseConfigCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          host: '10.10.10.10',
+          port: '9988',
+          database: 'databaseE1',
+          referenceId: 'database-id-1',
+          enterprise: { id: 'enterprise-id-1' },
+        }),
+      );
+    });
+  });
+
   const getWsPayload = (): EnterpriseWsPayload[] => [
     {
       id: 'enterprise-id-1',
@@ -151,6 +240,43 @@ describe('EnterprisesWsHandlerService', () => {
           environment: 'public',
           server_uuid: 'fafaf0f0',
           address: '11.11.11.11',
+          portUdp: 5401,
+          portTcp: 6401,
+          portWs: 7401,
+          portHttp: 8401,
+          apiPort: 9988,
+          create_at: 1783799304158,
+          update_at: 1790899663078,
+        },
+      },
+    },
+    {
+      id: 'enterprise-id-3',
+      name: 'enterprise test 3',
+      description: 'description test 3',
+      color: '#1b2027',
+      image: 'data:image/jpeg;base64...',
+      user_id: 'user-id-3',
+      user_database_id: 'user-database-id-3',
+      monitor_server_id: 'monitor-server-id-3',
+      create_at: 1790624656638,
+      update_at: null,
+      deleted: 0,
+      enabled: 1,
+      database: {
+        id: 'database-id-3',
+        codename: 'databaseE3',
+        description: 'description test 3',
+        fullname: 'enterprise test 3',
+        server_id: 'server-id-3',
+        enabled: 1,
+        server: {
+          id: 'server-id-3',
+          name: 'server-name-3',
+          type: 'tracking-backend',
+          environment: 'public',
+          server_uuid: 'fafaf0f1',
+          address: '12.12.12.12',
           portUdp: 5401,
           portTcp: 6401,
           portWs: 7401,

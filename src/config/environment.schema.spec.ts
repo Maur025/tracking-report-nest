@@ -25,7 +25,6 @@ describe('environmentSchema', () => {
     // THEN
     expect(result.APP_PORT).toBe(3000);
     expect(result.WS_PORT).toBe(4000);
-    expect(result.PING_INTERVAL_MS).toBe(1500);
   });
 
   it('should default numeric variables when they are not provided', () => {

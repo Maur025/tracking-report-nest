@@ -68,17 +68,36 @@ pnpm test:e2e      # end-to-end
 > La suite e2e cubre los **cuatro reportes** y valida tanto la respuesta `pdf`
 > como la `excel` (firmas `%PDF` y `PK\x03\x04`). Ver más abajo.
 
+## Cobertura
+
+`pnpm test:cov` mide la cobertura con **v8** sobre `src/`:
+
+| Métrica | Actual | Objetivo |
+|---|---|---|
+| Statements | 98.41 % | ≥ 95 % |
+| Branches | 91.74 % | ≥ 88 % |
+| Functions | 96.03 % | — |
+| Lines | 98.66 % | — |
+
+Lo que **no** está cubierto y requiere dependencias externas:
+
+- `report-management` (cola BullMQ) y `POST /api/events/reports/queue`: necesitan
+  **Redis**, que CI provee pero no está disponible en local.
+- `src/integrations/scheduler/`: es **código muerto** (pendiente de eliminar).
+
 ## Pruebas E2E (MSW)
 
 Las pruebas e2e (`test/*.e2e-spec.ts`) levantan la aplicación completa con
 `createTestApp` y sustituyen la API externa de la empresa por **MSW**, de modo que
-no se necesita ninguna dependencia de red real.
+no se necesita ninguna dependencia de red real. `createTestApp` también mockea
+`QueueModule`, por lo que **no requieren Redis**. La suite e2e solo cubre los
+cuatro reportes; el flujo de `report-management` todavía no tiene e2e.
 
 ### Archivos de soporte (`test/setup/`)
 
 | Archivo | Rol |
 |---|---|
-| `create-test-app.ts` | Crea la app Nest a partir de `AppModule`, aplica CORS, prefijo `api` y `ValidationPipe` (igual que `main.ts`). |
+| `create-test-app.ts` | Crea la app Nest a partir de `AppModule`, reemplaza `IntegrationsModule`, `QueueModule` y `ReportManagementModule` por módulos vacíos (mock), y aplica CORS, prefijo `api` y `ValidationPipe` (igual que `main.ts`). Gracias a esto las pruebas no necesitan WebSocket ni Redis. |
 | `e2e-test-setup.ts` | `setupFiles`: arranca/limpia/cierra el servidor MSW (`beforeAll`/`afterEach`/`afterAll`). |
 | `clean-database.ts` | Vacía `enterprise_configs` y `enterprises` antes de cada test. |
 | `seed-enterprise-config.ts` | Inserta una empresa y su configuración (`host: event-api-test`) para que los reportes resuelvan la conexión. |
@@ -101,8 +120,12 @@ const response = await request(app.getHttpServer())
   .parse(binaryParser);
 ```
 
-Se verifican los casos `400` (faltan params), `500` (empresa inexistente) y `200`
-(archivo `pdf`/`excel` válido).
+Se verifican los casos `400` (faltan params, param desconocido, `format` o
+`disposition` no soportados), `500` (empresa inexistente) y `200` (archivo
+`pdf`/`excel` válido, `format` por defecto, `disposition=inline`).
+
+> `disposition` solo se aplica a la respuesta **PDF**; el Excel siempre se devuelve
+> como `attachment` (`src/shared/response/excel-stream-response.ts`).
 
 ## Linting (oxlint)
 

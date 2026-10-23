@@ -1,13 +1,21 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication, Module, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { AppModule } from '../../src/app.module.js';
+import { IntegrationsModule } from '../../src/integrations/integrations.module.js';
+
+@Module({})
+class MockIntegrationsModule {}
 
 export const createTestApp = async (): Promise<INestApplication> => {
   const moduleFixture = await Test.createTestingModule({
     imports: [AppModule],
-  }).compile();
+  })
+    .overrideModule(IntegrationsModule)
+    .useModule(MockIntegrationsModule)
+    .compile();
 
   const app = moduleFixture.createNestApplication();
+  app.useLogger(false);
 
   app.enableCors({
     origin: '*',

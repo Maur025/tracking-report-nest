@@ -6,16 +6,22 @@ export class PaginationDto {
   @IsOptional()
   sortBy: string = 'id';
 
-  @Transform(({ value }) => value === 'true')
+  @Transform(({ value }) => {
+    if (typeof value === 'boolean') return value;
+
+    return value === 'true';
+  })
   @IsBoolean()
   @IsOptional()
   descending: boolean = false;
 
+  @Transform(({ value }) => Number(value))
   @IsInt()
   @Min(0)
   @IsOptional()
   page: number = 0;
 
+  @Transform(({ value }) => Number(value))
   @IsInt()
   @Min(1)
   @IsOptional()

@@ -29,8 +29,18 @@ Términos del dominio y técnicos usados a lo largo del proyecto.
 | **Client service** | Servicio (`*-client.service.ts`) encargado de comunicarse con la API HTTP externa de una empresa. |
 | **dataSource (de reporte)** | Función que devuelve un `AsyncGenerator` de filas; el motor de reporte lo consume en streaming. |
 | **StreamableFile** | Tipo de Nest para devolver archivos (Excel/PDF) en streaming. |
+| **ReportRequest** | Entidad que representa una solicitud de reporte y su estado (`PENDING`, `PROCESSING`, `COMPLETED`, `FAILED`). |
+| **ReportStatus** | Enumeración `ReportStatusEnum` con los estados de una `ReportRequest`. |
+| **BullMQ** | Librería de colas basada en Redis; gestiona los jobs de generación de reportes (`report-queue`). |
+| **Redis** | Almacén de datos en memoria usado como broker por BullMQ. Requerido por `QueueModule`. |
+| **Job** | Unidad de trabajo encolada en BullMQ (`generate-pdf`, `generate-excel`). |
+| **Queue (cola)** | Cola `report-queue` donde el productor publica jobs y el consumidor los procesa. |
+| **Producer (productor)** | Componente (`ReportProducer`) que agrega jobs a la cola. |
+| **Consumer (consumidor)** | Componente (`ReportConsumer`) que toma y procesa jobs de la cola. |
+| **report-generator** | Módulo (`src/report-generator/`) con el motor reutilizable de PDF y Excel. |
+| **report-management** | Módulo (`src/report-management/`) con la cola, los jobs y la persistencia de solicitudes de reporte. |
 | **WAL** | *Write-Ahead Logging* de SQLite; por eso hay archivos `.sqlite-wal` y `.sqlite-shm`. |
-| **Entidad** | Clase TypeORM mapeada a una tabla (`Enterprise`, `EnterpriseConfig`). |
+| **Entidad** | Clase TypeORM mapeada a una tabla (`Enterprise`, `EnterpriseConfig`, `ReportRequest`). |
 | **Migración** | Script versionado que aplica cambios de esquema (`src/database/migrations`). |
 | **Upsert** | Insertar o actualizar si ya existe (por clave de conflicto). |
 | **Prefijo global** | `api`, aplicado a todas las rutas en `main.ts`. |

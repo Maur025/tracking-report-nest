@@ -1,13 +1,22 @@
 import { Module } from '@nestjs/common';
-import { ReportModule } from '../../report/report.module.js';
+import { ReportGeneratorModule } from '../../report-generator/report-generator.module.js';
+import { ReportManagementModule } from '../../report-management/report-management.module.js';
 import { EnterpriseModule } from '../enterprise/enterprise.module.js';
-import { ProgressClientService } from './progress-client.service.js';
 import { ProgressController } from './progress.controller.js';
-import { ProgressService } from './progress.service.js';
+import { ProgressClientService } from './services/progress-client.service.js';
+import { ProgressConsumerService } from './services/progress-consumer.service.js';
+import { ProgressService } from './services/progress.service.js';
+import { QueueService } from './services/queue.service.js';
 
 @Module({
-  imports: [ReportModule, EnterpriseModule],
+  imports: [ReportGeneratorModule, ReportManagementModule, EnterpriseModule],
   controllers: [ProgressController],
-  providers: [ProgressService, ProgressClientService],
+  providers: [
+    ProgressService,
+    ProgressClientService,
+    QueueService,
+    ProgressConsumerService,
+  ],
+  exports: [ProgressConsumerService],
 })
 export class ProgressModule {}

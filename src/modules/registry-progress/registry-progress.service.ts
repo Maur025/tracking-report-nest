@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { ExcelReportService } from '../../report/services/excel-report.service.js';
+import { ExcelReportService } from '../../report-generator/services/excel-report.service.js';
 
 import { PassThrough } from 'node:stream';
-import { PdfReportService } from '../../report/services/pdf-report.service.js';
+import { PdfReportService } from '../../report-generator/services/pdf-report.service.js';
 import { getDateFilter } from '../../shared/utils/get-date-filter.js';
 import { EnterpriseConfigService } from '../enterprise/enterprise-config.service.js';
 import { EnterpriseConfig } from '../enterprise/entities/enterprise-config.entity.js';

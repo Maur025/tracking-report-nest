@@ -1,12 +1,16 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { excelStreamResponse } from '../../shared/response/excel-stream-response.js';
 import { pdfStreamResponse } from '../../shared/response/pdf-stream-response.js';
 import { EventReportQueryParams } from './dto/event-report-query-params.js';
-import { EventService } from './event.service.js';
+import { EventService } from './services/event.service.js';
+import { QueueService } from './services/queue.service.js';
 
 @Controller('events')
 export class EventController {
-  constructor(private readonly eventService: EventService) {}
+  constructor(
+    private readonly eventService: EventService,
+    private readonly queueService: QueueService,
+  ) {}
 
   @Get('reports')
   async generateReportStream(
@@ -23,5 +27,10 @@ export class EventController {
     }
 
     return excelStreamResponse(response, fileName);
+  }
+
+  @Post('reports/queue')
+  async addReportToQueue(@Body() request: EventReportQueryParams) {
+    return this.queueService.addReportToQueue(request);
   }
 }
