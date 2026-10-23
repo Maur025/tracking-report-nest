@@ -1,20 +1,20 @@
 import { Injectable } from '@nestjs/common';
-import { ExcelReportService } from '../../report-generator/services/excel-report.service.js';
+import { ExcelReportService } from '../../../report-generator/services/excel-report.service.js';
 
 import { PassThrough } from 'node:stream';
-import { PdfReportService } from '../../report-generator/services/pdf-report.service.js';
-import { getDateFilter } from '../../shared/utils/get-date-filter.js';
-import { EnterpriseConfigService } from '../enterprise/enterprise-config.service.js';
-import { EnterpriseConfig } from '../enterprise/entities/enterprise-config.entity.js';
+import { PdfReportService } from '../../../report-generator/services/pdf-report.service.js';
+import { getDateFilter } from '../../../shared/utils/get-date-filter.js';
+import { EnterpriseConfigService } from '../../enterprise/enterprise-config.service.js';
+import { EnterpriseConfig } from '../../enterprise/entities/enterprise-config.entity.js';
 import {
   getDate,
   getItemProgressName,
   getProgressValue,
   getTypeProgress,
   getVehicleName,
-} from './common/registry-progress-report-common.js';
-import { RegistryProgressReportQueryParams } from './dto/registry-progress-report-query-params.js';
-import { RegistryProgressReportResponse } from './interfaces/registry-progress-report-response.interface.js';
+} from '../common/registry-progress-report-common.js';
+import { RegistryProgressReportQueryParams } from '../dto/registry-progress-report-query-params.js';
+import { RegistryProgressReportResponse } from '../interfaces/registry-progress-report-response.interface.js';
 import { RegistryProgressClientService } from './registry-progress-client.service.js';
 
 @Injectable()

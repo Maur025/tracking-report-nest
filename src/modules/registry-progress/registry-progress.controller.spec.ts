@@ -4,7 +4,8 @@ import { PassThrough } from 'node:stream';
 import { beforeEach, describe, expect, it, Mock, vi } from 'vitest';
 import { RegistryProgressReportQueryParams } from './dto/registry-progress-report-query-params.js';
 import { RegistryProgressController } from './registry-progress.controller.js';
-import { RegistryProgressService } from './registry-progress.service.js';
+import { QueueService } from './services/queue.service.js';
+import { RegistryProgressService } from './services/registry-progress.service.js';
 
 describe('RegistryProgressController', () => {
   let controller: RegistryProgressController;
@@ -19,6 +20,10 @@ describe('RegistryProgressController', () => {
         {
           provide: RegistryProgressService,
           useValue: { generateReportStream: mockGenerateReportStream },
+        },
+        {
+          provide: QueueService,
+          useValue: {},
         },
       ],
     }).compile();
