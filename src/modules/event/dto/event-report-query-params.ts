@@ -1,6 +1,6 @@
 import { Transform } from 'class-transformer';
 import { ArrayNotEmpty, IsArray, IsOptional, IsString } from 'class-validator';
-import { ReportParamWithDateDto } from '../../../report-generator/dto/report-param-with-date.dto.js';
+import { ReportParamWithDateDto } from '../../../report-generator/dto/report-param-with-date.dtoc.js';
 
 export class EventReportQueryParams extends ReportParamWithDateDto {
   @IsString()

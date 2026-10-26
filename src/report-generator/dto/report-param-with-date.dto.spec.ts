@@ -1,7 +1,7 @@
 import { Temporal } from '@js-temporal/polyfill';
 import { plainToInstance } from 'class-transformer';
 import { describe, expect, it } from 'vitest';
-import { ReportParamWithDateDto } from './report-param-with-date.dto.js';
+import { ReportParamWithDateDto } from './report-param-with-date.dtoc.js';
 
 describe('ReportParamWithDateDto', () => {
   it('should transform an ISO date string into a zoned date time', () => {
@@ -29,7 +29,13 @@ describe('ReportParamWithDateDto', () => {
     });
 
     // THEN
-    for (const field of ['date', 'fromDate', 'toDate', 'monthDate', 'yearDate'] as const) {
+    for (const field of [
+      'date',
+      'fromDate',
+      'toDate',
+      'monthDate',
+      'yearDate',
+    ] as const) {
       expect(dto[field]).toBeInstanceOf(Temporal.ZonedDateTime);
     }
   });
