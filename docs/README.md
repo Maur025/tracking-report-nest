@@ -24,7 +24,7 @@ necesidad de que alguien se lo explique de viva voz**.
 | [02 — Tecnologías](./02-tecnologias.md) | Stack completo, versiones, propósito de cada tecnología en el proyecto y enlaces oficiales. |
 | [03 — Instalación y ejecución](./03-instalacion-y-ejecucion.md) | Requisitos, instalación, scripts, migraciones y solución de problemas. |
 | [04 — Variables de entorno](./04-variables-de-entorno.md) | Propósito, tipo, valor por defecto y ejemplo de cada variable. |
-| [05 — Arquitectura](./05-arquitectura.md) | Módulos, flujo de datos, cola BullMQ/Redis e integraciones (HTTP y WebSocket). |
+| [05 — Arquitectura](./05-arquitectura.md) | Módulos, flujo de datos, procesamiento asíncrono (BullMQ/Redis) e integraciones (HTTP y WebSocket). |
 | [06 — API](./06-api.md) | Endpoints, parámetros de consulta y ejemplos `curl`. |
 | [07 — Base de datos](./07-base-de-datos.md) | SQLite, entidades, transacciones y migraciones. |
 | [08 — Testing y calidad](./08-testing-y-calidad.md) | Vitest, oxlint, Prettier y CI. |

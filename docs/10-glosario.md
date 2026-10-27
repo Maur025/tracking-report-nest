@@ -32,20 +32,30 @@ Términos del dominio y técnicos usados a lo largo del proyecto.
 | **ReportRequest** | Entidad que representa una solicitud de reporte y su estado (`PENDING`, `PROCESSING`, `COMPLETED`, `FAILED`). |
 | **ReportStatus** | Enumeración `ReportStatusEnum` con los estados de una `ReportRequest`. |
 | **BullMQ** | Librería de colas basada en Redis; gestiona los jobs de generación de reportes (`report-queue`). |
-| **Redis** | Almacén de datos en memoria usado como broker por BullMQ. Requerido por `QueueModule`. |
+| **Redis** | Almacén de datos en memoria usado como broker por BullMQ. Requerido por `QueueModule` y por la suite e2e. |
 | **Job** | Unidad de trabajo encolada en BullMQ (`generate-pdf`, `generate-excel`). |
 | **Queue (cola)** | Cola `report-queue` donde el productor publica jobs y el consumidor los procesa. |
 | **Producer (productor)** | Componente (`ReportProducer`) que agrega jobs a la cola. |
-| **Consumer (consumidor)** | Componente (`ReportConsumer`) que toma y procesa jobs de la cola. |
+| **Consumer (consumidor)** | Componente (`ReportConsumer`) que toma el job, genera el documento con la estrategia y persiste estado + archivo. |
 | **report-generator** | Módulo (`src/report-generator/`) con el motor reutilizable de PDF y Excel. |
-| **report-management** | Módulo (`src/report-management/`) con la cola, los jobs y la persistencia de solicitudes de reporte. |
+| **report-management** | Módulo (`src/report-management/`) con `ReportRequest`, el productor, `ReportRequestService` y el listado de solicitudes. |
+| **report-processing** | Módulo (`src/report-processing/`) con el consumidor BullMQ, la estrategia de generación y el token de generadores. |
+| **ReportGenerator** | Interfaz que implementan los `*ConsumerService` para generar un reporte a partir de un `ReportRequest`. |
+| **Strategy (estrategia)** | `ReportGenerateStrategyService`: resuelve el `ReportGenerator` según el `type` del reporte. |
+| **`REPORT_GENERATORS`** | Token de inyección con la lista de los cuatro generadores de reporte. |
+| **ReportRequestService** | Servicio que crea, busca, lista y actualiza `ReportRequest`. |
+| **PageResponse** | Forma de respuesta paginada `{ data, pagination: { count, pages } }`. |
+| **`APP_STATIC_PATH`** | Carpeta base donde se guardan los archivos generados (`reports/pdf`, `reports/excel`). |
+| **Archivo generado** | Documento PDF/Excel producido por el consumidor; su ruta relativa queda en `report_requests.file_path`. |
+| **Swagger** | Documentación OpenAPI interactiva expuesta en `/api/docs`. |
+| **`format`** | Formato de salida del reporte: `pdf` (default) o `excel`. |
 | **WAL** | *Write-Ahead Logging* de SQLite; por eso hay archivos `.sqlite-wal` y `.sqlite-shm`. |
 | **Entidad** | Clase TypeORM mapeada a una tabla (`Enterprise`, `EnterpriseConfig`, `ReportRequest`). |
 | **Migración** | Script versionado que aplica cambios de esquema (`src/database/migrations`). |
 | **Upsert** | Insertar o actualizar si ya existe (por clave de conflicto). |
 | **Prefijo global** | `api`, aplicado a todas las rutas en `main.ts`. |
 | **ValidationPipe** | Pipe global de Nest que valida y transforma DTOs (`whitelist`, `forbidNonWhitelisted`, `transform`). |
-| **Scheduler** | Servicio interno (`SchedulerCommonService`) pensado para disparar eventos recurrentes; hoy es **código muerto** (no se inyecta ni se arranca). |
+| **Scheduler** | Servicio interno (`SchedulerCommonService`) pensado para disparar eventos recurrentes; hoy es **código muerto** (no se inyecta ni se arranca) y sus variables de entorno fueron eliminadas. |
 | **ESM** | *ECMAScript Modules*; el proyecto es `"type": "module"` y usa imports con extensión `.js`. |
 | **type-aware linting** | Linting que usa información de tipos (oxlint + tsgolint). |
 | **MSW** | *Mock Service Worker*: intercepta peticiones HTTP en las pruebas e2e para simular la API externa de cada empresa. |

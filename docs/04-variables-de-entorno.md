@@ -13,7 +13,9 @@ envFilePath: !process.env.NODE_ENV ? '.env' : `.env.${process.env.NODE_ENV}`
 
 La validación la realiza **Zod** con el esquema `src/config/environment.schema.ts`.
 Las variables numéricas se reciben como *string* y se convierten/validan con
-`z.coerce.number()`.
+`z.coerce.number()`; los defaults se aplican con `.prefault(...)` (numéricos/ports)
+o `.default(...)` (strings/enums). La plantilla versionada es **`.env.example`**;
+usala como punto de partida.
 
 ---
 
@@ -26,20 +28,18 @@ Las variables numéricas se reciben como *string* y se convierten/validan con
 | `TZ` | string | `America/La_Paz` | `"America/La_Paz"` | Zona horaria por defecto del proceso. |
 | `WS_PORT` | number (port) | `10701` | `10701` | Puerto WebSocket del servicio. |
 | `APP_PORT` | number (port) | `10801` | `10801` | Puerto HTTP donde escucha la app y se publica ante el *processor*. |
+| `APP_STATIC_PATH` | string | `./public` | `./public` | Carpeta base donde `ReportConsumer` guarda los archivos generados (`reports/pdf`, `reports/excel`). |
 | `WS_GATEWAY_HOST_PROCESSOR` | string | `localhost` | `172.20.50.123` | Host del *gateway/processor* al que se conecta por WebSocket. |
 | `WS_GATEWAY_PORT_PROCESSOR` | number (port) | `7170` | `7170` | Puerto del *gateway/processor*. |
 | `UUID` | string | `f0f0f0f0` | `e430add2` | Identificador único con el que el servicio se registra ante el *processor*. |
-| `PING_INTERVAL_MS` | number (int ≥ 2) | `5000` | `5000` | Intervalo (ms) pensado para el evento `time.ping` (scheduler sin uso). |
-| `STORAGE_INTERNAL_HRS` | number (int ≥ 1) | `1` | *(el `.env` declara `STORAGE_INTERVAL_HRS=1`, ver nota)* | Intervalo (horas) validado por Zod para el evento `time.storage`. |
-| `SAVE_INTERVAL_MIN` | number (int ≥ 1) | `5` | `5` | Intervalo (minutos) pensado para el evento `time.save` (scheduler sin uso). |
 | `DB_URL` | string | `./database/tracking-report.sqlite` | `./database/tracking-report.sqlite` | Ruta del archivo SQLite usado por la aplicación. |
-| `NODE_ENV` | string enum | `development` | *(sin definir)* | Entorno de ejecución. Selecciona el archivo `.env.<NODE_ENV>` y activa `migrationsRun` cuando vale `test`. |
+| `NODE_ENV` | string enum | `development` | *(sin definir)* | Entorno de ejecución (`development`, `test`, `production`). Selecciona `.env.<NODE_ENV>` y activa `migrationsRun` cuando vale `test`. |
 | `REDIS_HOST` | string | `localhost` | `localhost` | Host de Redis usado por BullMQ. |
 | `REDIS_PORT` | number (port) | `6379` | `6379` | Puerto de Redis. |
 | `BULLMQ_JOB_ATTEMPTS` | number (int ≥ 1) | `3` | `3` | Reintentos por job antes de marcarlo como fallido. |
 | `BULLMQ_JOB_BACKOFF_TYPE` | string enum | `exponential` | `exponential` | Estrategia de espera entre reintentos (`exponential` o `fixed`). |
 | `BULLMQ_JOB_BACKOFF_DELAY` | number (int ≥ 100) | `1000` | `1000` | Retardo base (ms) del backoff. |
-| `BULLMQ_JOB_REMOVE_ON_COMPLETE` | number (int ≥ 0) | `100` | `1000` | Cantidad de jobs completados a conservar (o `true`/`false` en BullMQ; aquí se tipa como número). |
+| `BULLMQ_JOB_REMOVE_ON_COMPLETE` | number (int ≥ 0) | `100` | `1000` | Cantidad de jobs completados a conservar. |
 | `BULLMQ_JOB_REMOVE_ON_FAIL` | number (int ≥ 0) | `500` | `2000` | Cantidad de jobs fallidos a conservar. |
 
 ---
@@ -67,27 +67,23 @@ Las variables numéricas se reciben como *string* y se convierten/validan con
   listener del evento `enterprises`.
 - **`UUID`** — Identificador de esta instancia frente al *processor*.
 
-### Intervalos internos (scheduler, código muerto)
+### Archivos generados
 
-Estas variables solo las lee `SchedulerCommonService`, que **no tiene utilidad real**:
-se registra en `IntegrationsModule` pero nunca se inyecta ni se llama a `start()`, así
-que no llega a crear ningún intervalo. Se añadió creyendo que hacía falta para el
-gateway y está pendiente de eliminar (ver [01 — Estado actual](./01-estado-actual.md)).
+- **`APP_STATIC_PATH`** — Directorio base donde `ReportConsumer` escribe los reportes
+  asíncronos:
+  - `reports/pdf/report-<reportRequestId>.pdf`
+  - `reports/excel/report-<reportRequestId>.xlsx`
 
-- **`PING_INTERVAL_MS`** → pensado para el evento `time.ping`.
-- **`STORAGE_INTERVAL_HRS`** → pensado para el evento `time.storage`.
-- **`SAVE_INTERVAL_MIN`** → pensado para el evento `time.save`.
-
-> ⚠️ **Inconsistencia conocida:** el esquema Zod define `STORAGE_INTERNAL_HRS`
-> (con "N", no "V"), mientras que `.env`, `.env.test` y `SchedulerCommonService`
-> usan `STORAGE_INTERVAL_HRS`. Como Zod no está en modo estricto, la variable del
-> `.env` se conserva en `process.env` y el servicio la lee igual, pero el esquema
-> valida un nombre distinto. Al eliminar el scheduler, estas variables desaparecen.
+  La ruta relativa se guarda en `report_requests.file_path`. **Nest no sirve este
+  directorio estáticamente** hoy, así que en despliegue conviene montarlo como
+  volumen persistente y servirlo desde otro componente (o agregar un endpoint de
+  descarga).
 
 ### Cola y Redis
 
 - **`REDIS_HOST` / `REDIS_PORT`** — Dirección del broker Redis que usa BullMQ.
   `QueueModule` los pasa a `BullModule.forRootAsync` al inicializar la conexión.
+  Redis es necesario para arrancar la app y **también para `pnpm test:e2e`**.
 - **`BULLMQ_JOB_ATTEMPTS`** — Número de intentos por job.
 - **`BULLMQ_JOB_BACKOFF_TYPE` / `BULLMQ_JOB_BACKOFF_DELAY`** — Estrategia y retardo
   del backoff entre reintentos.
@@ -95,9 +91,6 @@ gateway y está pendiente de eliminar (ver [01 — Estado actual](./01-estado-ac
   completados/fallidos se conservan en Redis (`removeOnComplete` / `removeOnFail`).
   El `.env` actual usa `1000` y `2000`, valores distintos de los defaults del
   esquema (`100` y `500`).
-
-> En las pruebas e2e `createTestApp` reemplaza `QueueModule` por un módulo vacío,
-> por lo que **no se necesita Redis** para correrlas.
 
 ### Base de datos
 
@@ -108,6 +101,15 @@ gateway y está pendiente de eliminar (ver [01 — Estado actual](./01-estado-ac
 - **`NODE_ENV`** — Entorno (`development` si no se define). `ConfigModule` lo usa para
   elegir `.env.<NODE_ENV>` (`vitest.config.e2e.ts` fija `test`) y `TypeOrmModule`
   ejecuta las migraciones al arrancar (`migrationsRun`) cuando vale `test`.
+
+### Variables eliminadas (scheduler)
+
+`PING_INTERVAL_MS`, `STORAGE_INTERNAL_HRS`/`STORAGE_INTERVAL_HRS` y
+`SAVE_INTERVAL_MIN` **ya no forman parte del esquema** ni de los `.env`. Solo las
+referencia `SchedulerCommonService`, que es código muerto: se registra en
+`IntegrationsModule` pero nunca se inyecta ni se llama a `start()`. Si se instanciara,
+`getOrThrow` fallaría porque las variables no existen. Ver
+[01 — Estado actual](./01-estado-actual.md).
 
 ---
 
@@ -122,15 +124,12 @@ TZ="America/La_Paz"
 
 WS_PORT=10701
 APP_PORT=10801
+APP_STATIC_PATH=./public
 
 WS_GATEWAY_HOST_PROCESSOR=172.20.50.123
 WS_GATEWAY_PORT_PROCESSOR=7170
 
 UUID=e430add2
-
-PING_INTERVAL_MS=5000
-STORAGE_INTERVAL_HRS=1
-SAVE_INTERVAL_MIN=5
 
 DB_URL=./database/tracking-report.sqlite
 
@@ -153,15 +152,12 @@ TZ="America/La_Paz"
 
 WS_PORT=10701
 APP_PORT=10801
+APP_STATIC_PATH=./public
 
 WS_GATEWAY_HOST_PROCESSOR=localhost
 WS_GATEWAY_PORT_PROCESSOR=7170
 
 UUID=ffffffff
-
-PING_INTERVAL_MS=5000
-STORAGE_INTERVAL_HRS=1
-SAVE_INTERVAL_MIN=5
 
 DB_URL=:memory:
 
@@ -179,9 +175,10 @@ BULLMQ_JOB_REMOVE_ON_FAIL=2000
 
 ## Buenas prácticas
 
-- **No versionar secretos:** `.env*` está en `.gitignore`. Para producción usa las
+- **No versionar secretos:** `.env` está en `.gitignore`. Para producción usa las
   variables del entorno o el gestor de secretos de tu plataforma.
-- **Mantén el esquema y el `.env` alineados:** si añades una variable, agrégala
-  tanto a `environment.schema.ts` como a los `.env` correspondientes.
+- **Mantén el esquema, `.env.example` y los `.env` alineados:** si añades una variable,
+  agrégala en los tres lugares.
 - **Los defaults del esquema no sustituyen al `.env`:** sirven para que la app no
   falle si falta una variable, pero conviene declararlas explícitamente.
+- **Monta `APP_STATIC_PATH` como volumen persistente** si usás la generación asíncrona.

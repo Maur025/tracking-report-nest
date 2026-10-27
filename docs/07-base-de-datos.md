@@ -36,9 +36,9 @@ Puntos clave:
   desarrollo/producción se aplican con `pnpm migration:run`.
 
 > La base de datos **no** almacena datos de rastreo; guarda el **catálogo de
-> empresas y sus configuraciones** e incluye la tabla `report_requests` para las
-> **solicitudes de reporte** (persistencia aún no operativa). Los datos de rastreo
-> viven en las APIs externas.
+> empresas y sus configuraciones** y la tabla `report_requests` con las
+> **solicitudes de reporte asíncronas** (estado, payload y ruta del archivo
+> generado). Los datos de rastreo viven en las APIs externas.
 
 ## Entidades
 
@@ -96,6 +96,14 @@ Relación: `OneToMany` con `EnterpriseConfig`.
 
 `ReportStatusEnum` (`src/report-management/enums/report-status.enum.ts`):
 `PENDING`, `PROCESSING`, `COMPLETED`, `FAILED`.
+
+La tabla la usan los `QueueService` (crean la solicitud en `PENDING`),
+`ReportConsumer` (la pasa a `PROCESSING` y luego a `COMPLETED`/`FAILED`) y
+`GET /api/reports/queue` (listado paginado).
+
+`file_path` guarda la **ruta relativa** dentro de `APP_STATIC_PATH`, por ejemplo
+`reports/pdf/report-<id>.pdf` o `reports/excel/report-<id>.xlsx`. El archivo en sí
+vive en disco, no en SQLite.
 
 ### `BaseEntity` (abstracta)
 
@@ -211,4 +219,5 @@ erDiagram
 
 Flujo típico: el *processor* envía empresas por WebSocket → se hace *upsert* de la
 empresa y sus configuraciones → las peticiones de reporte resuelven la configuración
-por `database` (codename) para saber a qué `host:port` llamar.
+por `database` (codename) para saber a qué `host:port` llamar. En el flujo asíncrono,
+además, se crea un `ReportRequest` y el consumidor actualiza su estado y `file_path`.

@@ -14,11 +14,12 @@ empresa). Este servicio:
 4. Transforma y da formato a los datos.
 5. Devuelve el resultado como **Excel** (`.xlsx`) o **PDF** en streaming al cliente.
 
+El mismo reporte puede solicitarse de forma **asíncrona**: se crea un
+`ReportRequest`, se publica un job en **BullMQ/Redis** y un consumidor genera el
+archivo en segundo plano.
+
 Adicionalmente, se conecta por **WebSocket** a un *gateway/processor* central para
 recibir y persistir el catálogo de empresas y sus configuraciones de conexión.
-
-También integra una **cola de reportes** (`report-queue`) mediante **BullMQ** y
-**Redis**, aunque el flujo asíncrono de generación sigue en fase inicial.
 
 ## Qué hace hoy (funcionalidad implementada)
 
@@ -26,16 +27,17 @@ También integra una **cola de reportes** (`report-queue`) mediante **BullMQ** y
 
 Cada reporte sigue el mismo patrón: controller → service → `*-client.service`
 (consulta HTTP externa) → motor de reporte (`report-generator/`) → `StreamableFile`.
+Además, cada módulo expone el encolado asíncrono y su consumidor.
 
-| Reporte | Endpoint | Estado |
-|---|---|---|
-| **Eventos** | `GET /api/events/reports` | ✅ Implementado |
-| **Progreso** | `GET /api/progress/reports` | ✅ Implementado |
-| **Reglas** | `GET /api/rules/reports` | ✅ Implementado |
-| **Progreso de registro** | `GET /api/registry-progress/reports` | ✅ Implementado |
+| Reporte | Reporte en streaming | Encolado | Estado |
+|---|---|---|---|
+| **Eventos** | `GET /api/events/reports` | `POST /api/events/reports/queue` | ✅ Implementado |
+| **Progreso** | `GET /api/progress/reports` | `POST /api/progress/reports/queue` | ✅ Implementado |
+| **Reglas** | `GET /api/rules/reports` | `POST /api/rules/reports/queue` | ✅ Implementado |
+| **Progreso de registro** | `GET /api/registry-progress/reports` | `POST /api/registry-progress/reports/queue` | ✅ Implementado |
 
-Cada uno devuelve **Excel** (`.xlsx`) cuando el `format` no es `pdf`, o **PDF**
-cuando `format=pdf` (detalle en [06 — API](./06-api.md)).
+El `GET` devuelve **PDF** cuando `format=pdf` (valor por defecto) o **Excel** en
+cualquier otro caso válido (`format=excel`). Detalle en [06 — API](./06-api.md).
 
 ### Motor de reportes
 
@@ -53,20 +55,29 @@ Los contratos de generación se exponen mediante clases abstractas:
 - **Ingesta por WebSocket:** `EnterprisesWsHandlerService` recibe el payload de
   empresas desde el *processor* y hace *upsert* de `Enterprise` y
   `EnterpriseConfig` en SQLite (ver [05 — Arquitectura](./05-arquitectura.md)).
-- **CRUD HTTP de empresas:** `EnterpriseController` expone
-  `POST/GET/PATCH/DELETE /api/enterprises`. **Solo `POST` (crear) está implementado
-  de verdad**; el resto son *stubs* (ver deuda técnica).
+- **CRUD HTTP de empresas:** `EnterpriseController` expone:
+  - `POST /api/enterprises` — crea empresa + configuraciones.
+  - `GET /api/enterprises` — lista paginada.
+  - `GET /api/enterprises/:id` — obtiene una empresa (`404` si no existe).
+  - `DELETE /api/enterprises/:id` — elimina la empresa.
+  - **No existe `PATCH`**, aunque `UpdateEnterpriseDto` esté definido.
 
-### Cola de reportes y gestión de reportes
+### Cola de reportes y procesamiento asíncrono
 
-- `ReportManagementModule` registra el token de cola `report-queue` con BullMQ.
-- `ReportProducer` publica los jobs `generate-pdf` y `generate-excel`.
-- `ReportConsumer` procesa esos jobs desde Redis.
-- `ReportRequest` modela el estado (`PENDING`, `PROCESSING`, `COMPLETED`,
-  `FAILED`), el resultado y el error de cada reporte en la tabla `report_requests`
-  (la persistencia aún no se usa desde el servicio).
-- `POST/GET/PATCH/DELETE /api/report-management` siguen como *stubs*; el CRUD
-  operativo y la ejecución real del job no están completos.
+- `ReportManagementModule` registra la cola `report-queue` con BullMQ y la entidad
+  `ReportRequest`.
+- Cada módulo de reporte tiene un `QueueService` que:
+  1. valida que exista la empresa (`databaseName`);
+  2. crea un `ReportRequest` en estado `PENDING`;
+  3. publica `generate-pdf` o `generate-excel` con `jobId` `pdf-<id>` / `excel-<id>`.
+- `ReportProcessingModule` registra `ReportConsumer`
+  (`@Processor('report-queue', { concurrency: 2 })`) y
+  `ReportGenerateStrategyService`, que resuelve el generador por `type`.
+- El consumidor genera el archivo, lo guarda en
+  `APP_STATIC_PATH/reports/{pdf,excel}/report-<id>.<ext>` y actualiza el estado:
+  `PENDING → PROCESSING → COMPLETED` o `FAILED` (con `error_message`).
+- `GET /api/reports/queue` lista las solicitudes de forma paginada. No hay endpoint
+  para consultar una solicitud por id ni para descargar el archivo generado.
 
 ### Integración con el processor
 
@@ -74,41 +85,50 @@ Los contratos de generación se exponen mediante clases abstractas:
   `GatewayConnectionConfig`.
   El evento `enterprises` alimenta SQLite vía `EnterprisesWsHandlerService`.
 
+### Documentación de la API
+
+- **Swagger** está disponible en `/api/docs` (configurado en `main.ts`).
+
 ### Pruebas
 
 - **Unitarias:** Vitest, junto a cada archivo (`*.spec.ts`).
 - **E2E:** cubren los **cuatro reportes** (`test/*.e2e-spec.ts`). La API externa de
   la empresa se simula con **MSW** (`test/setup/msw/`) y la base de datos se levanta
   en memoria (`DB_URL=:memory:`, `NODE_ENV=test`, con migraciones automáticas).
+  **Requieren Redis**, porque `QueueModule` no se reemplaza en `createTestApp`.
   Detalle en [08 — Testing y calidad](./08-testing-y-calidad.md).
 
 ## Estructura de carpetas (resumen)
 
 ```text
 src/
-├── app.module.ts              # Registra config, TypeORM, HTTP client, Queue, módulos
-├── main.ts                    # Bootstrap HTTP: prefijo global "api" + ValidationPipe
+├── app.module.ts              # Config, TypeORM, HTTP client, Queue y módulos
+├── main.ts                    # Bootstrap HTTP: CORS, prefijo "api", ValidationPipe, Swagger
 ├── config/
 │   └── environment.schema.ts  # Esquema Zod de variables de entorno
 ├── database/
 │   ├── data-source.ts         # DataSource de TypeORM para migraciones (CLI)
 │   └── migrations/            # Migraciones SQL generadas
 ├── infrastructure/
-│   └── queue/                 # Configuración de BullMQ/Redis
+│   └── queue/                 # Configuración de BullMQ/Redis y constantes de la cola
 ├── integrations/
 │   ├── gateway/               # Cliente WS al processor + payload de empresas
 │   └── scheduler/             # Código muerto (pendiente de eliminar)
 ├── modules/
-│   ├── enterprise/            # CRUD + configuración de empresas (SQLite)
-│   ├── event/                 # Reporte de eventos
-│   ├── progress/              # Reporte de progreso
-│   ├── rules/                 # Reporte de reglas
-│   └── registry-progress/     # Reporte de progreso de registro
+│   ├── enterprise/            # CRUD de empresas + configuración (SQLite)
+│   ├── event/                 # Reporte de eventos + encolado y consumidor
+│   ├── progress/              # Reporte de progreso + encolado y consumidor
+│   ├── rules/                 # Reporte de reglas + encolado y consumidor
+│   └── registry-progress/     # Reporte de progreso de registro + encolado y consumidor
 ├── report-generator/          # Motor reutilizable de PDF y Excel
-├── report-management/         # Cola, jobs y persistencia de reportes
+├── report-management/         # Entidad, productor, servicio y listado de solicitudes
+├── report-processing/         # Consumidor BullMQ + estrategia de generación
 ├── shared/                    # Entidad base, transacciones, DTOs, utilidades, respuestas
 └── types/                     # Declaraciones de tipos para dependencias sin tipos
 ```
+
+En cada módulo de reporte, la lógica vive en subcarpetas:
+`services/`, `dto/`, `interfaces/`, `mapper/` y `common/`.
 
 ## Deuda técnica / inconsistencias conocidas
 
@@ -117,22 +137,20 @@ src/
 
 | # | Hallazgo | Ubicación | Impacto |
 |---|---|---|---|
-| 1 | **Nombre de variable inconsistente:** el esquema define `STORAGE_INTERNAL_HRS`, pero `.env`, `.env.test` y el scheduler usan `STORAGE_INTERVAL_HRS` (typo). El scheduler lee el valor real vía `ConfigService`, que accede a `process.env`, no al esquema validado. | `src/config/environment.schema.ts`, `.env`, `.env.test`, `src/integrations/scheduler/scheduler-common.service.ts` | Confuso; el valor del esquema nunca coincide con el del `.env`. Desaparece al eliminar el scheduler (#5). |
-| 2 | **DataSource de migraciones con ruta fija:** `data-source.ts` hardcodea `database/tracking-report.sqlite` y no lee `DB_URL` del entorno. | `src/database/data-source.ts` | Migrar una BD distinta a la fija requiere editar código. |
-| 3 | **CRUD de empresas incompleto:** `findAll`, `findOne`, `update` y `remove` devuelven strings de ejemplo en lugar de operar sobre la base de datos. | `src/modules/enterprise/enterprise.service.ts` | Los endpoints `GET/PATCH/DELETE /api/enterprises` no funcionan realmente. |
-| 4 | **Texto "Usuario de prueba"** hardcodeado en los encabezados de todos los reportes. | `src/modules/*/*.service.ts` | El usuario real no se refleja en los reportes. |
-| 5 | **Scheduler sin uso:** `SchedulerCommonService` se registra en `IntegrationsModule` pero nunca se inyecta ni se llama a `start()`. Se añadió creyendo que era necesario para el gateway; no lo es. | `src/integrations/scheduler/`, `src/integrations/integrations.module.ts` | Código muerto; sostiene variables de entorno (`PING_INTERVAL_MS`, `STORAGE_INTERNAL_HRS`/`STORAGE_INTERVAL_HRS`, `SAVE_INTERVAL_MIN`) que tampoco tienen efecto. |
-| 6 | **Gestión de reportes en fase inicial:** los endpoints de `/api/report-management` y el procesamiento de la cola están pendientes de implementación; el consumidor no ejecuta todavía la generación real del documento. | `src/report-management/`, `src/modules/event/event-report-generator.ts` | La infraestructura de cola existe, pero el flujo de extremo a extremo no está operativo. |
+| 1 | **Empresas sin `PATCH`:** `UpdateEnterpriseDto` existe pero ningún endpoint lo usa. | `src/modules/enterprise/` | No se pueden actualizar empresas por HTTP. |
+| 2 | **Texto "Usuario de prueba"** hardcodeado en los encabezados de todos los reportes. | `src/modules/*/services/*.service.ts` | El usuario real no se refleja en los reportes. |
+| 3 | **Scheduler sin uso y con variables eliminadas:** `SchedulerCommonService` se registra en `IntegrationsModule` pero nunca se inyecta ni se llama a `start()`. Además lee con `getOrThrow` `PING_INTERVAL_MS`, `STORAGE_INTERVAL_HRS` y `SAVE_INTERVAL_MIN`, que ya no existen en el esquema ni en los `.env`. | `src/integrations/scheduler/`, `src/integrations/integrations.module.ts` | Código muerto; si se instanciara, fallaría por variables faltantes. |
+| 4 | **Sin descarga de archivos generados:** el consumidor escribe en `APP_STATIC_PATH`, pero Nest no sirve `public/` estáticamente y no hay endpoint de descarga. | `src/report-processing/report-consumer.ts`, `src/main.ts` | El cliente no puede obtener el archivo por HTTP; solo conoce el `reportRequestId`. |
+| 5 | **Gestión de reportes incompleta:** `ReportManagementService` está vacío y el `POST` de `ReportController` está comentado. Solo funciona `GET /api/reports/queue`. | `src/report-management/` | No hay consulta por id ni operaciones de gestión. |
+| 6 | **DataSource de migraciones con ruta fija:** `data-source.ts` hardcodea `database/tracking-report.sqlite` y no lee `DB_URL`. | `src/database/data-source.ts` | Migrar una BD distinta requiere editar código. |
+| 7 | **E2E dependiente de Redis:** `createTestApp` solo reemplaza `IntegrationsModule`, no `QueueModule`. | `test/setup/create-test-app.ts` | La suite e2e necesita Redis para cerrar la app sin errores. |
 
 ## Próximos pasos sugeridos (para futuras iteraciones)
 
-- Eliminar el scheduler (`SchedulerCommonService` y sus variables de entorno), ya que no
-  tiene utilidad real.
-- Completar el CRUD real de empresas.
-- Implementar la generación de reportes desde el *consumer* de la cola y conectar el
-  flujo con `ReportGenerator`.
-- Integrar los reportes disponibles (`EventReportGenerator`, etc.) al flujo de
-  `ReportManagementModule`.
-- Unificar el nombre de la variable de almacenamiento (si el scheduler no se elimina) y
-  hacer que lea del `ConfigService` validado.
+- Eliminar el scheduler (`SchedulerCommonService`) y sus restos.
+- Completar el `PATCH` de empresas o eliminar `UpdateEnterpriseDto`.
+- Servir los archivos generados (estático o endpoint de descarga) y exponer el estado
+  de una solicitud por id.
 - Resolver el "Usuario de prueba" con el usuario autenticado real.
+- Alinear `data-source.ts` con `DB_URL`.
+- Evaluar mockear `QueueModule` en e2e para desacoplar la suite de Redis.
