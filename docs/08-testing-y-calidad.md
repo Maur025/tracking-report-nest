@@ -28,7 +28,7 @@ test: {
 
 - Sin `globals` (hay que importar `describe`, `it`, etc. desde `vitest`).
 - Incluye todos los `*.spec.ts`.
-- Resuelve alias de `tsconfig.json` (`resolve.tsconfigPaths`).
+- Resuelve alias de `tsconfig.json` (`resolve.tsconfigPaths: true`).
 
 ### E2E — `vitest.config.e2e.ts`
 
@@ -49,11 +49,13 @@ test: {
 - `setupFiles` arranca el servidor **MSW** antes de cada archivo (`listen`), resetea
   los handlers tras cada test y lo cierra al final.
 
-## Convenciones de nombres
+## Organización y volumen
 
-- **Unitarias:** `*.spec.ts` colocadas junto al archivo probado (p. ej.
+- **Unitarias:** `*.spec.ts` junto al archivo probado (p. ej.
   `event.service.spec.ts` junto a `event.service.ts`).
 - **E2E:** `test/*.e2e-spec.ts`.
+- **Estado actual:** 131 archivos fuente (sin `*.spec.ts` ni `*.d.ts`), 78 archivos
+  de test unitario y 4 archivos e2e (10 casos por reporte).
 
 ## Comandos
 
@@ -62,42 +64,52 @@ pnpm test          # unitarias
 pnpm test:watch    # unitarias en watch
 pnpm test:cov      # con cobertura
 pnpm test:debug    # con inspector (--inspect-brk)
-pnpm test:e2e      # end-to-end
+pnpm test:e2e      # end-to-end (requiere Redis)
 ```
 
 > La suite e2e cubre los **cuatro reportes** y valida tanto la respuesta `pdf`
-> como la `excel` (firmas `%PDF` y `PK\x03\x04`). Ver más abajo.
+> como la `excel` (firmas `%PDF` y `PK\x03\x04`), además de los errores `400`,
+> `500` y las cabeceras de `disposition`.
 
 ## Cobertura
 
-`pnpm test:cov` mide la cobertura con **v8** sobre `src/`:
+`pnpm test:cov` mide la cobertura con **v8** sobre `src/`. Última medición
+(2026-10-27):
 
 | Métrica | Actual | Objetivo |
 |---|---|---|
-| Statements | 98.41 % | ≥ 95 % |
-| Branches | 91.74 % | ≥ 88 % |
-| Functions | 96.03 % | — |
-| Lines | 98.66 % | — |
+| Statements | 98.50 % | ≥ 95 % |
+| Branches | 91.36 % | ≥ 88 % |
+| Functions | 96.25 % | — |
+| Lines | 98.74 % | — |
 
-Lo que **no** está cubierto y requiere dependencias externas:
+Lo que **no** está cubierto:
 
-- `report-management` (cola BullMQ) y `POST /api/events/reports/queue`: necesitan
-  **Redis**, que CI provee pero no está disponible en local.
-- `src/integrations/scheduler/`: es **código muerto** (pendiente de eliminar).
+- Clases abstractas (`PdfReportService`, `ExcelReportService`, `TransactionHandler`).
+- Módulos NestJS, migraciones, boot (`main.ts`, `data-source.ts`) e interfaces/tokens.
+- `report-management` y `report-processing` tienen cobertura por unitarios
+  (productor, consumidor, estrategia, servicios), pero **no** por e2e: no hay prueba
+  end-to-end del flujo de cola.
 
 ## Pruebas E2E (MSW)
 
 Las pruebas e2e (`test/*.e2e-spec.ts`) levantan la aplicación completa con
 `createTestApp` y sustituyen la API externa de la empresa por **MSW**, de modo que
-no se necesita ninguna dependencia de red real. `createTestApp` también mockea
-`QueueModule`, por lo que **no requieren Redis**. La suite e2e solo cubre los
-cuatro reportes; el flujo de `report-management` todavía no tiene e2e.
+no se necesita ninguna dependencia de red real.
+
+> ⚠️ **Requieren Redis.** `createTestApp` solo reemplaza `IntegrationsModule`; el
+> `QueueModule` real queda activo y BullMQ intenta conectarse a
+> `REDIS_HOST:REDIS_PORT`. Sin Redis, los casos pueden ejecutarse pero el cierre de
+> la app (`afterAll`) falla por timeout de conexión. CI provee un servicio Redis.
+
+La suite e2e cubre los cuatro reportes por `GET`; el flujo de encolado
+(`POST .../reports/queue`) todavía no tiene e2e.
 
 ### Archivos de soporte (`test/setup/`)
 
 | Archivo | Rol |
 |---|---|
-| `create-test-app.ts` | Crea la app Nest a partir de `AppModule`, reemplaza `IntegrationsModule`, `QueueModule` y `ReportManagementModule` por módulos vacíos (mock), y aplica CORS, prefijo `api` y `ValidationPipe` (igual que `main.ts`). Gracias a esto las pruebas no necesitan WebSocket ni Redis. |
+| `create-test-app.ts` | Crea la app Nest a partir de `AppModule`, reemplaza **solo** `IntegrationsModule` por un módulo vacío y aplica CORS, prefijo `api` y `ValidationPipe`. El WebSocket no se conecta, pero Redis sí se usa. |
 | `e2e-test-setup.ts` | `setupFiles`: arranca/limpia/cierra el servidor MSW (`beforeAll`/`afterEach`/`afterAll`). |
 | `clean-database.ts` | Vacía `enterprise_configs` y `enterprises` antes de cada test. |
 | `seed-enterprise-config.ts` | Inserta una empresa y su configuración (`host: event-api-test`) para que los reportes resuelvan la conexión. |
@@ -109,7 +121,7 @@ cuatro reportes; el flujo de `report-management` todavía no tiene e2e.
 ### Patrón de un test
 
 ```ts
-app = await createTestApp();          // app completa
+app = await createTestApp();          // app completa (incluye QueueModule)
 await cleanDatabase(dataSource);
 await seedEnterpriseConfig(dataSource);
 
@@ -122,7 +134,7 @@ const response = await request(app.getHttpServer())
 
 Se verifican los casos `400` (faltan params, param desconocido, `format` o
 `disposition` no soportados), `500` (empresa inexistente) y `200` (archivo
-`pdf`/`excel` válido, `format` por defecto, `disposition=inline`).
+`pdf`/`excel` válido, `format` por defecto `pdf`, `disposition=inline`).
 
 > `disposition` solo se aplica a la respuesta **PDF**; el Excel siempre se devuelve
 > como `attachment` (`src/shared/response/excel-stream-response.ts`).
@@ -171,15 +183,18 @@ pnpm format
 `.github/workflows/ci.yml` se ejecuta en `push` y `pull_request` a `main` y
 `develop` (solo en el repositorio `Maur025/tracking-report-nest`).
 
+El job `review-build-and-test` corre en `ubuntu-latest` con timeout de 5 minutos y
+un servicio **`redis:7.4-alpine`** en `localhost:6379`.
+
 Pasos:
 
 1. Checkout del código.
 2. Configura clave SSH y `known_hosts` (para instalar `tracking-common`).
 3. Configura git para usar SSH en GitHub.
-4. Configura pnpm + Node 24 (con caché).
+4. Configura pnpm + Node 24 con caché (`pnpm/setup@v3.1.1`).
 5. `pnpm lint`
 6. `pnpm test`
-7. `pnpm test:e2e`
+7. `pnpm test:e2e` (timeout de 3 minutos)
 8. `pnpm build`
 
 ```mermaid
@@ -188,13 +203,13 @@ flowchart LR
     B --> C["Setup pnpm + Node 24"]
     C --> D["pnpm lint"]
     D --> E["pnpm test"]
-    E --> G["pnpm test:e2e"]
+    E --> G["pnpm test:e2e<br/>(servicio Redis)"]
     G --> F["pnpm build"]
 ```
 
 ## Dependabot
 
-`.github/dependabot.yml` abre PRs semanales (máximo 5) para:
+`.github/dependabot.yml` abre PRs **mensuales** (máximo 5) para:
 
 - Dependencias **npm**.
 - **GitHub Actions**.
@@ -203,6 +218,7 @@ flowchart LR
 
 - Añade/actualiza pruebas junto al código (`*.spec.ts`).
 - Mantén `pnpm lint`, `pnpm test` y `pnpm test:e2e` en verde antes del PR.
-- No rompas el patrón de los módulos de reporte (controller → service → client →
-  mapper).
+- Para e2e, levanta Redis (`containers/redis/docker-compose.yml`).
+- No rompas el patrón de los módulos de reporte
+  (controller → service → client/queue/consumer → mapper).
 - Respeta el ESM: imports con extensión `.js`.

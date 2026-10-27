@@ -5,10 +5,10 @@
 | Requisito | Versión | Notas |
 |---|---|---|
 | **Node.js** | 24 (recomendado) | El CI usa `node@24`. |
-| **pnpm** | 12.11.2 | La versión exacta está fijada en `package.json` (`packageManager`). |
+| **pnpm** | 12.15.0 | La versión exacta está fijada en `package.json` (`packageManager`). |
 | **Git** | Reciente | Necesario para instalar la dependencia desde GitHub. |
 | **Acceso SSH a GitHub** | — | La dependencia `tracking-common` se instala desde `github:Maur025/tracking-common#main`, por lo que tu cuenta necesita acceso SSH al repositorio. |
-| **Redis** | 7 (recomendado) | Broker de BullMQ para la cola `report-queue`. Es requerido por `pnpm start`/`pnpm start:dev`; las pruebas e2e reemplazan `QueueModule` por un mock y no lo necesitan. |
+| **Redis** | 7 (recomendado) | Broker de BullMQ para la cola `report-queue`. Es requerido por `pnpm start`, `pnpm start:dev` y `pnpm test:e2e` (la suite no mockea `QueueModule`). |
 
 Verifica tu entorno:
 
@@ -17,11 +17,11 @@ node -v
 pnpm -v
 ```
 
-Si no tienes pnpm 12.11.2:
+Si no tienes pnpm 12.15.0:
 
 ```bash
 corepack enable
-corepack prepare pnpm@12.11.2 --activate
+corepack prepare pnpm@12.15.0 --activate
 ```
 
 ## 1. Clonar e instalar
@@ -37,11 +37,17 @@ pnpm install
 
 ## 2. Configurar variables de entorno
 
-Copia/crea el archivo `.env` a partir de los valores documentados en
-[04 — Variables de entorno](./04-variables-de-entorno.md). Ya existe un `.env` con
-la configuración de desarrollo y un `.env.test` para pruebas. Además de las
-variables de la aplicación, configura `REDIS_HOST`/`REDIS_PORT` y las opciones
-`BULLMQ_*` para la cola.
+Parte de la plantilla versionada:
+
+```bash
+cp .env.example .env
+```
+
+Ajusta los valores según [04 — Variables de entorno](./04-variables-de-entorno.md).
+Ya existen un `.env` con la configuración de desarrollo y un `.env.test` para
+pruebas. Además de las variables de la aplicación, configura `REDIS_HOST`/`REDIS_PORT`,
+las opciones `BULLMQ_*` y `APP_STATIC_PATH` (carpeta donde el consumidor guarda los
+archivos generados).
 
 ## 3. Base de datos (migraciones)
 
@@ -91,11 +97,12 @@ pnpm start:prod
 ```
 
 Por defecto el servidor escucha en el puerto definido por `APP_PORT` (`.env`
-de desarrollo: `10801`) y expone todas las rutas bajo el prefijo **`/api`**.
+de desarrollo: `10801`) y expone todas las rutas bajo el prefijo **`/api`**. La
+documentación interactiva está en `http://localhost:10801/api/docs`.
 
 > El arranque requiere **Redis** disponible en `REDIS_HOST:REDIS_PORT`, porque
-> `QueueModule` inicializa la conexión de BullMQ. En las pruebas e2e `QueueModule`
-> se reemplaza por un mock, por lo que no necesitan Redis.
+> `QueueModule` inicializa la conexión de BullMQ. Las pruebas e2e también lo
+> necesitan: `createTestApp` solo reemplaza `IntegrationsModule`.
 
 Comprueba que está arriba:
 
@@ -128,7 +135,7 @@ La base SQLite se guarda en `database/tracking-report.sqlite` (más los archivos
 | `pnpm test:watch` | Pruebas en modo watch. |
 | `pnpm test:cov` | Pruebas con cobertura. |
 | `pnpm test:debug` | Pruebas con inspector. |
-| `pnpm test:e2e` | Pruebas e2e (config `vitest.config.e2e.ts`). |
+| `pnpm test:e2e` | Pruebas e2e (config `vitest.config.e2e.ts`); requieren Redis. |
 | `pnpm deploy` | Despliegue con `nest deploy` (`@nestjs/mau`). |
 
 ## Solución de problemas
@@ -136,8 +143,8 @@ La base SQLite se guarda en `database/tracking-report.sqlite` (más los archivos
 | Síntoma | Causa probable | Solución |
 |---|---|---|
 | `pnpm install` falla con `tracking-common` | Sin acceso SSH a GitHub | Configura tu clave SSH (`ssh -T git@github.com`). |
-| La app falla o registra errores de conexión al arrancar | Redis no está disponible | Levanta Redis o ajusta `REDIS_HOST`/`REDIS_PORT` en `.env`. |
-| Los filtros por `STORAGE_INTERVAL_HRS` no toman el valor esperado | Inconsistencia de nombre de variable (ver [01 — Estado actual](./01-estado-actual.md)) | Revisar el esquema Zod (`STORAGE_INTERNAL_HRS`) y el `.env` (`STORAGE_INTERVAL_HRS`). |
+| La app falla al arrancar o los e2e fallan al cerrar | Redis no está disponible | Levanta Redis (`docker compose -f containers/redis/docker-compose.yml up -d`) o ajusta `REDIS_HOST`/`REDIS_PORT` en `.env`. |
 | Las migraciones no encuentran entidades | No se compiló (`nest build`) antes | Los scripts ya incluyen `nest build`. |
 | Las pruebas e2e fallan al resolver la API externa | MSW no intercepta la petición o los handlers no cubren la ruta | Revisa los handlers en `test/setup/msw/` y que `vitest.config.e2e.ts` cargue `setupFiles`. |
+| Los archivos generados no aparecen donde se espera | `APP_STATIC_PATH` mal configurado | Ajusta `APP_STATIC_PATH`; el consumidor escribe en `<APP_STATIC_PATH>/reports/{pdf,excel}`. |
 | No se encuentra la fuente del PDF | Se resuelve desde `src/report-generator/fonts` | Ejecutar desde la raíz del proyecto (usa `cwd()`). |

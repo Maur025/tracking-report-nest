@@ -3,7 +3,8 @@
 Todas las rutas están bajo el prefijo global **`/api`** y se sirven en `APP_PORT`
 (por defecto `10801` en desarrollo).
 
-Base URL de ejemplo: `http://localhost:10801/api`
+- Base URL de ejemplo: `http://localhost:10801/api`
+- **Swagger UI:** `http://localhost:10801/api/docs`
 
 ---
 
@@ -11,20 +12,22 @@ Base URL de ejemplo: `http://localhost:10801/api`
 
 | Método | Ruta | Descripción |
 |---|---|---|
-| `GET` | `/api/events/reports` | Reporte de **eventos**. |
-| `GET` | `/api/progress/reports` | Reporte de **progreso**. |
-| `GET` | `/api/rules/reports` | Reporte de **reglas**. |
-| `GET` | `/api/registry-progress/reports` | Reporte de **progreso de registro**. |
+| `GET` | `/api/events/reports` | Reporte de **eventos** (stream). |
+| `GET` | `/api/progress/reports` | Reporte de **progreso** (stream). |
+| `GET` | `/api/rules/reports` | Reporte de **reglas** (stream). |
+| `GET` | `/api/registry-progress/reports` | Reporte de **progreso de registro** (stream). |
+| `POST` | `/api/events/reports/queue` | Encola un reporte de eventos. |
+| `POST` | `/api/progress/reports/queue` | Encola un reporte de progreso. |
+| `POST` | `/api/rules/reports/queue` | Encola un reporte de reglas. |
+| `POST` | `/api/registry-progress/reports/queue` | Encola un reporte de progreso de registro. |
+| `GET` | `/api/reports/queue` | Lista paginada de solicitudes de reporte. |
 | `POST` | `/api/enterprises` | Crear empresa con sus configuraciones. |
-| `GET` | `/api/enterprises` | Listar empresas. *(stub, ver deuda técnica)* |
-| `GET` | `/api/enterprises/:id` | Obtener empresa. *(stub)* |
-| `PATCH` | `/api/enterprises/:id` | Actualizar empresa. *(stub)* |
-| `DELETE` | `/api/enterprises/:id` | Eliminar empresa. *(stub)* |
-| `POST` | `/api/report-management` | Crear una solicitud de reporte. *(stub)* |
-| `GET` | `/api/report-management` | Listar solicitudes de reporte. *(stub)* |
-| `GET` | `/api/report-management/:id` | Obtener una solicitud de reporte. *(stub)* |
-| `PATCH` | `/api/report-management/:id` | Actualizar una solicitud de reporte. *(stub)* |
-| `DELETE` | `/api/report-management/:id` | Eliminar una solicitud de reporte. *(stub)* |
+| `GET` | `/api/enterprises` | Listar empresas (paginado). |
+| `GET` | `/api/enterprises/:id` | Obtener una empresa. |
+| `DELETE` | `/api/enterprises/:id` | Eliminar una empresa. |
+
+> No existe `PATCH /api/enterprises/:id` aunque `UpdateEnterpriseDto` esté definido.
+> Tampoco existen los antiguos endpoints CRUD de `/api/report-management`.
 
 > La validación global usa `whitelist` + `forbidNonWhitelisted`: **enviar un
 > parámetro no declarado produce un error `400`**.
@@ -33,7 +36,7 @@ Base URL de ejemplo: `http://localhost:10801/api`
 
 ## Parámetros comunes a los reportes
 
-Los cuatro endpoints de reporte extienden el mismo DTO base
+Los cuatro DTOs de reporte extienden la misma base
 (`ReportParamDto` + `PaginationDto` + `ReportParamWithDateDto`).
 
 ### Identificación y formato
@@ -41,8 +44,8 @@ Los cuatro endpoints de reporte extienden el mismo DTO base
 | Parámetro | Tipo | Requerido | Default | Descripción |
 |---|---|---|---|---|
 | `databaseName` | string | ✅ | — | Nombre/codename de la base de datos de la empresa. Determina qué configuración de conexión se usa. |
-| `format` | `json` \| `excel` \| `pdf` | ❌ | `json` | Formato de salida. **En la práctica:** `pdf` devuelve PDF; cualquier otro valor (incluido `json`) devuelve Excel. |
-| `disposition` | `inline` \| `attachment` | ❌ | `inline` | Solo aplica a PDF: si se muestra en el navegador o se descarga. |
+| `format` | `excel` \| `pdf` | ❌ | `pdf` | Formato de salida. |
+| `disposition` | `inline` \| `attachment` | ❌ | `inline` | Solo aplica a PDF: si se muestra en el navegador o se descarga. El Excel siempre se entrega como `attachment`. |
 | `fileName` | string | ❌ | `example` | Nombre base del archivo (sin extensión). |
 | `title` | string | ❌ | — | Título mostrado en el encabezado del reporte. |
 | `filterByLabel` | string | ❌ | — | Texto descriptivo del filtro aplicado, mostrado en el encabezado. |
@@ -60,16 +63,17 @@ flowchart LR
 |---|---|---|---|
 | `sortBy` | string | `id` | Campo por el que ordenar. |
 | `descending` | boolean (`"true"`) | `false` | Orden descendente. |
-| `page` | entero ≥ 0 | `0` | Página (el streaming interno pagina automáticamente). |
-| `size` | entero ≥ 1 | `10` | Tamaño de página (el streaming interno usa 100). |
+| `page` | entero ≥ 0 | `0` | Página inicial (el streaming interno pagina automáticamente). |
+| `size` | entero ≥ 1 | `10` | Tamaño de página del pedido externo (el streaming interno usa 100). |
 
 ### Fechas (ISO 8601 *instant*)
 
-Se transforman con `Temporal` y se convierten en un rango, ajustado a la `zoneId`.
+Se parsean con `Temporal.Instant.from` y se convierten en un rango de *epoch
+milliseconds*, ajustado a la `zoneId` del cliente.
 
 | Parámetro | Tipo | Descripción |
 |---|---|---|
-| `zoneId` | string | Zona horaria IANA (p. ej. `America/La_Paz`) usada para calcular los límites del día/mes/año. |
+| `zoneId` | string | Zona horaria IANA (p. ej. `America/La_Paz`) usada para calcular los límites del día/mes/año. Si se omite, se usa `UTC`. |
 | `date` | string ISO | Un día concreto. |
 | `fromDate` | string ISO | Inicio de un rango (debe ser ≤ `toDate`). |
 | `toDate` | string ISO | Fin de un rango. |
@@ -77,6 +81,7 @@ Se transforman con `Temporal` y se convierten en un rango, ajustado a la `zoneId
 | `yearDate` | string ISO | Cualquier fecha del año a reportar. |
 
 Prioridad del filtro de fechas: `fromDate`+`toDate` → `yearDate` → `monthDate` → `date`.
+Si solo se envía uno de `fromDate`/`toDate`, se ignora.
 
 Ejemplo de fecha válida: `2026-01-01T00:00:00Z`.
 
@@ -98,13 +103,13 @@ Parámetros adicionales:
 **Columnas del reporte:** Nro, Fecha, Tipo, Regla, Vehículo, Evento.
 
 ```bash
-# Excel (por defecto)
-curl -o eventos.xlsx \
-  "http://localhost:10801/api/events/reports?databaseName=empresa1&format=excel&title=Eventos&fileName=eventos"
-
-# PDF en línea
+# PDF (formato por defecto)
 curl -o eventos.pdf \
-  "http://localhost:10801/api/events/reports?databaseName=empresa1&format=pdf&disposition=inline&fromDate=2026-01-01T00:00:00Z&toDate=2026-01-31T23:59:59Z&zoneId=America/La_Paz&type=exceso_velocidad"
+  "http://localhost:10801/api/events/reports?databaseName=empresa1&fromDate=2026-01-01T00:00:00Z&toDate=2026-01-31T23:59:59Z&zoneId=America/La_Paz"
+
+# Excel
+curl -o eventos.xlsx \
+  "http://localhost:10801/api/events/reports?databaseName=empresa1&format=excel&title=Eventos&fileName=eventos&type=exceso_velocidad"
 ```
 
 ---
@@ -135,7 +140,7 @@ Parámetros adicionales:
 
 ```bash
 curl -o reglas.pdf \
-  "http://localhost:10801/api/rules/reports?databaseName=empresa1&format=pdf&title=Reglas&type=geocerca&frequencyWeekday=1"
+  "http://localhost:10801/api/rules/reports?databaseName=empresa1&title=Reglas&type=geocerca&frequencyWeekday=1"
 ```
 
 ---
@@ -155,6 +160,82 @@ Parámetros adicionales:
 ```bash
 curl -o registro.xlsx \
   "http://localhost:10801/api/registry-progress/reports?databaseName=empresa1&format=excel&vehicleId=ABC123&yearDate=2026-06-01T00:00:00Z"
+```
+
+---
+
+## Encolado de reportes
+
+Cada reporte tiene un `POST` equivalente a su `GET`, pero recibe los parámetros en
+el **body JSON** y responde `202 Accepted`:
+
+```json
+{ "reportRequestId": "040e4f33-0c87-40c5-886a-4980ea8a48b4" }
+```
+
+El `format` del body decide el job (`generate-pdf` o `generate-excel`). El body usa
+el mismo DTO que el `GET`, incluidos los filtros y fechas.
+
+```bash
+curl -X POST http://localhost:10801/api/events/reports/queue \
+  -H "Content-Type: application/json" \
+  -d '{
+    "databaseName": "empresa1",
+    "format": "pdf",
+    "title": "Eventos",
+    "fileName": "eventos",
+    "fromDate": "2026-01-01T00:00:00Z",
+    "toDate": "2026-01-31T23:59:59Z",
+    "zoneId": "America/La_Paz"
+  }'
+```
+
+### Ciclo de vida
+
+| Estado | Significado |
+|---|---|
+| `PENDING` | Solicitud creada y job encolado. |
+| `PROCESSING` | El consumidor tomó el job y está generando el archivo. |
+| `COMPLETED` | Archivo generado; `file_path` contiene la ruta relativa. |
+| `FAILED` | Falló la generación; `error_message` contiene el detalle. BullMQ puede reintentar según `BULLMQ_*`. |
+
+El archivo se guarda en:
+
+```text
+<APP_STATIC_PATH>/reports/pdf/report-<reportRequestId>.pdf
+<APP_STATIC_PATH>/reports/excel/report-<reportRequestId>.xlsx
+```
+
+> Hoy no hay endpoint para descargar el archivo ni para consultar una solicitud por
+> id. Nest tampoco sirve `APP_STATIC_PATH` estáticamente.
+
+### `GET /api/reports/queue` — Listar solicitudes
+
+Acepta los parámetros de paginación (`page`, `size`, `sortBy`, `descending`) y
+devuelve:
+
+```json
+{
+  "data": [
+    {
+      "id": "040e4f33-0c87-40c5-886a-4980ea8a48b4",
+      "type": "event",
+      "payload": { "databaseName": "empresa1", "format": "pdf" },
+      "status": "COMPLETED",
+      "filePath": "reports/pdf/report-040e4f33-0c87-40c5-886a-4980ea8a48b4.pdf",
+      "errorMessage": null,
+      "createdAt": "2026-01-31T12:00:00.000Z",
+      "createdBy": "system",
+      "updatedAt": "2026-01-31T12:00:05.000Z",
+      "updatedBy": "system"
+    }
+  ],
+  "pagination": { "count": 1, "pages": 1 }
+}
+```
+
+```bash
+curl "http://localhost:10801/api/reports/queue?page=0&size=10&descending=true"
 ```
 
 ---
@@ -198,32 +279,34 @@ curl -X POST http://localhost:10801/api/enterprises \
   }'
 ```
 
-### `GET/PATCH/DELETE /api/enterprises/:id` y `GET /api/enterprises`
+> La validación anidada de `enterpriseConfigs` no está aplicada actualmente
+> (no hay `@ValidateNested`/`@Type`); los campos se validan al persistir.
 
-Actualmente **no operan sobre la base de datos** (devuelven texto de ejemplo). Ver
-[01 — Estado actual](./01-estado-actual.md).
+### `GET /api/enterprises` — Listar empresas
 
----
+Acepta `page`, `size`, `sortBy`, `descending` y devuelve
+`{ data, pagination: { count, pages } }`.
 
-## Endpoints de gestión de reportes
+```bash
+curl "http://localhost:10801/api/enterprises?page=0&size=10"
+```
 
-`ReportManagementController` (`src/report-management/`) expone un CRUD bajo
-`/api/report-management`. **Hoy todos los métodos son stubs**: delegan en
-`ReportManagementService`, que devuelve textos de ejemplo, y no consultan la base
-de datos ni encolan trabajos.
+### `GET /api/enterprises/:id` — Obtener empresa
 
-Aun así, el módulo ya registra la infraestructura de cola:
+Devuelve la empresa o `404` si no existe.
 
-- `ReportProducer` puede agregar jobs `generate-pdf` / `generate-excel` a la cola
-  `report-queue` con `jobId` `pdf-<reportId>` / `excel-<reportId>`.
-- `ReportConsumer` reconoce esos jobs y, actualmente, retorna sin generar el
-  documento.
-- `ReportRequest` (`report_requests`) modela el estado
-  (`PENDING`, `PROCESSING`, `COMPLETED`, `FAILED`), `type`, `payload`,
-  `file_path` y `error_message`.
+```bash
+curl http://localhost:10801/api/enterprises/enterprise_1
+```
 
-Ver el flujo detallado en
-[05 — Arquitectura](./05-arquitectura.md#gestión-de-reportes-y-cola).
+### `DELETE /api/enterprises/:id` — Eliminar empresa
+
+Elimina la empresa (y sus configuraciones por `ON DELETE CASCADE`). Responde `200`
+sin cuerpo; `404` si no existe.
+
+```bash
+curl -X DELETE http://localhost:10801/api/enterprises/enterprise_1
+```
 
 ---
 
@@ -231,7 +314,9 @@ Ver el flujo detallado en
 
 | Código | Situación |
 |---|---|
-| `200` | Reporte o empresa devueltos correctamente. |
+| `200` | Reporte, listado o empresa devueltos correctamente. |
+| `202` | Solicitud de reporte encolada (`{ reportRequestId }`). |
 | `400` | Query params/body inválidos (validación `class-validator`). |
-| `500` | No existe configuración de empresa para el `databaseName` (`findOneOrFail` lanza `EntityNotFoundError`, que Nest mapea a `500`). |
+| `404` | Empresa inexistente en `GET`/`DELETE /api/enterprises/:id`. |
+| `500` | No existe configuración para el `databaseName` (`findOneOrFail` lanza `EntityNotFoundError`), rango de fechas inválido (`fromDate > toDate`) o error inesperado. |
 | `502` | Fallo al consultar la API externa de la empresa (`BadGatewayException`). |

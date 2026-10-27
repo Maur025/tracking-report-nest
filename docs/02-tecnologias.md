@@ -12,18 +12,19 @@ Las versiones provienen de `package.json`. El símbolo `^` indica que el
 | Tecnología | Versión | Propósito en este proyecto | Documentación |
 |---|---|---|---|
 | **Node.js** | 24 (CI) | Runtime de ejecución. El pipeline de CI fija `node@24`. | https://nodejs.org/docs/latest-v24.x/api/ |
-| **pnpm** | 12.11.2 | Gestor de paquetes (declarado con `packageManager`). | https://pnpm.io |
+| **pnpm** | 12.15.0 | Gestor de paquetes (declarado con `packageManager`). | https://pnpm.io |
 | **TypeScript** | ^6.0.3 | Lenguaje del proyecto. Config estricta (`strict: true`, `module: nodenext`). | https://www.typescriptlang.org/docs/ |
 
 ## Framework principal
 
 | Tecnología | Versión | Propósito en este proyecto | Documentación |
 |---|---|---|---|
-| **NestJS** (`@nestjs/common`, `@nestjs/core`, `@nestjs/platform-express`) | ^12.1.3 | Framework base del microservicio: módulos, inyección de dependencias, controladores HTTP sobre Express. | https://docs.nestjs.com |
+| **NestJS** (`@nestjs/common`, `@nestjs/core`, `@nestjs/platform-express`) | ^12.2.0 | Framework base del microservicio: módulos, inyección de dependencias, controladores HTTP sobre Express. | https://docs.nestjs.com |
 | **`@nestjs/config`** | ^12.0.1 | Carga y validación de variables de entorno (con esquema Zod). | https://docs.nestjs.com/techniques/configuration |
-| **`@nestjs/cli`** | ^12.0.8 | CLI de Nest: `nest build`, `nest start`, `nest deploy`. | https://docs.nestjs.com/cli/overview |
-| **`@nestjs/schematics`** | ^12.0.7 | Generadores de código del CLI (`nest g ...`). | https://docs.nestjs.com/cli/usages |
-| **`@nestjs/testing`** | ^12.1.3 | Utilidades de testing para levantar módulos en pruebas. | https://docs.nestjs.com/fundamentals/testing |
+| **`@nestjs/cli`** | ^12.0.10 | CLI de Nest: `nest build`, `nest start`, `nest deploy`. | https://docs.nestjs.com/cli/overview |
+| **`@nestjs/schematics`** | ^12.0.10 | Generadores de código del CLI (`nest g ...`). | https://docs.nestjs.com/cli/usages |
+| **`@nestjs/testing`** | ^12.2.0 | Utilidades de testing para levantar módulos en pruebas. | https://docs.nestjs.com/fundamentals/testing |
+| **`@nestjs/swagger`** | ^12.0.4 | Documentación OpenAPI/Swagger expuesta en `/api/docs`. | https://docs.nestjs.com/openapi/introduction |
 
 ## HTTP, base de datos y validación
 
@@ -45,16 +46,16 @@ Las versiones provienen de `package.json`. El símbolo `^` indica que el
 |---|---|---|---|
 | **ExcelJS** | ^4.4.0 | Generación de reportes Excel en streaming (`WorkbookWriter`). | https://github.com/exceljs/exceljs |
 | **PDFKit** | ^0.20.2 | Generación de reportes PDF (tablas, encabezados, fuentes). | https://pdfkit.org |
-| **`@types/pdfkit`** | ^0.17.6 | Tipos de TypeScript para PDFKit. | https://www.npmjs.com/package/@types/pdfkit |
+| **`@types/pdfkit`** | ^0.17.7 | Tipos de TypeScript para PDFKit. | https://www.npmjs.com/package/@types/pdfkit |
 
 ## Colas y mensajería
 
 | Tecnología | Versión | Propósito en este proyecto | Documentación |
 |---|---|---|---|
-| **`@nestjs/bullmq`** | ^12.0.0 | Integración de BullMQ con Nest (`BullModule.forRootAsync`, `@InjectQueue`, `@Processor`). Usado por `QueueModule` y `ReportManagementModule`. | https://docs.nestjs.com/techniques/queues |
-| **BullMQ** | ^6.3.14 | Cola de jobs `report-queue` (`generate-pdf`, `generate-excel`) con reintentos y backoff. | https://docs.bullmq.io |
+| **`@nestjs/bullmq`** | ^12.0.0 | Integración de BullMQ con Nest (`BullModule.forRootAsync`, `@InjectQueue`, `@Processor`). Usado por `QueueModule`, `ReportManagementModule` y `ReportProcessingModule`. | https://docs.nestjs.com/techniques/queues |
+| **BullMQ** | ^6.4.2 | Cola de jobs `report-queue` (`generate-pdf`, `generate-excel`) con reintentos y backoff. | https://docs.bullmq.io |
 | **ioredis** | ^6.0.0 | Cliente Redis usado por BullMQ para conectarse al broker. | https://github.com/redis/ioredis |
-| **Redis** | Servidor externo | Broker que transporta y persiste los jobs de la cola. Requerido para `pnpm start`/`pnpm start:dev`; en e2e el `QueueModule` se reemplaza por un mock. | https://redis.io/docs/ |
+| **Redis** | Servidor externo | Broker que transporta y persiste los jobs de la cola. Requerido para `pnpm start`, `pnpm start:dev` y también para `pnpm test:e2e` (el `QueueModule` no se mockea). | https://redis.io/docs/ |
 
 ## Integración y dominio
 
@@ -68,13 +69,13 @@ Las versiones provienen de `package.json`. El símbolo `^` indica que el
 
 | Tecnología | Versión | Propósito en este proyecto | Documentación |
 |---|---|---|---|
-| **Vitest** | ^4.1.11 | Runner de pruebas unitarias y e2e. | https://vitest.dev |
-| **`@vitest/coverage-v8`** | ^4.1.11 | Cobertura de pruebas. | https://vitest.dev/guide/coverage |
+| **Vitest** | ^4.1.12 | Runner de pruebas unitarias y e2e. | https://vitest.dev |
+| **`@vitest/coverage-v8`** | ^4.1.12 | Cobertura de pruebas. | https://vitest.dev/guide/coverage |
 | **Supertest** | ^7.3.1 | Pruebas e2e de endpoints HTTP. | https://github.com/ladjs/supertest |
 | **`@types/supertest`** | ^7.2.1 | Tipos de TypeScript para Supertest. | https://www.npmjs.com/package/@types/supertest |
 | **MSW** (`msw`) | ^3.0.3 | Intercepta y simula la API HTTP externa de las empresas en las pruebas e2e. Declarado en `dependencies` (no en `devDependencies`). | https://mswjs.io |
-| **oxlint** | ^1.87.0 | Linter rápido (reemplaza a ESLint). | https://oxc.rs/docs/guide/usage/linter.html |
-| **`oxlint-tsgolint`** | ^7.0.2004 | Reglas *type-aware* de oxlint. | https://oxc.rs |
+| **oxlint** | ^1.89.0 | Linter rápido (reemplaza a ESLint). | https://oxc.rs/docs/guide/usage/linter.html |
+| **`oxlint-tsgolint`** | ^7.0.2005 | Reglas *type-aware* de oxlint. | https://oxc.rs |
 | **Prettier** | ^3.9.10 | Formateo de código. | https://prettier.io/docs/ |
 | **`source-map-support`** | ^0.5.21 | Trazas legibles al ejecutar el JS compilado. | https://www.npmjs.com/package/source-map-support |
 
@@ -82,7 +83,7 @@ Las versiones provienen de `package.json`. El símbolo `^` indica que el
 
 | Tecnología | Versión | Propósito en este proyecto | Documentación |
 |---|---|---|---|
-| **`@nestjs/mau`** | ^0.2.8 | Despliegue administrado de NestJS (`nest deploy`). | https://mau.nestjs.com |
+| **`@nestjs/mau`** | ^0.2.9 | Despliegue administrado de NestJS (`nest deploy`). | https://mau.nestjs.com |
 | **`@types/node`** | ^26.6.5 | Tipos de Node.js. | https://www.npmjs.com/package/@types/node |
 | **`@types/express`** | ^5.0.6 | Tipos de Express (plataforma HTTP). | https://www.npmjs.com/package/@types/express |
 
@@ -91,5 +92,5 @@ Las versiones provienen de `package.json`. El símbolo `^` indica que el
 | Herramienta | Propósito |
 |---|---|
 | **GitHub Actions** | CI en `.github/workflows/ci.yml` (lint + tests + build). |
-| **Dependabot** | Actualización semanal de dependencias npm y GitHub Actions. |
+| **Dependabot** | Actualización mensual de dependencias npm y GitHub Actions. |
 | **VS Code** | Configuración en `.vscode/settings.json`. |
