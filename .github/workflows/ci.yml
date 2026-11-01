@@ -41,7 +41,7 @@ jobs:
         run: git config --global url."git@github.com:".insteadOf "https://github.com/"
 
       - name: Setup pnpm and Node.js
-        uses: pnpm/setup@v3.1.1
+        uses: pnpm/setup@v3.1.2
         with:
           runtime: node@24
           cache: true
